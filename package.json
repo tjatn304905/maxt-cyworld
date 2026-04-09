@@ -1,0 +1,21 @@
+{
+  "name": "maxt-cyworld",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "concurrently \"npm run dev:client\" \"npm run dev:server\"",
+    "dev:client": "npm run dev -w @maxt/client",
+    "dev:server": "npm run dev -w @maxt/server",
+    "build": "npm run build -w @maxt/shared && npm run build -w @maxt/client",
+    "build:client": "npm run build -w @maxt/client",
+    "build:server": "npm run build -w @maxt/server"
+  },
+  "devDependencies": {
+    "concurrently": "^9.2.1",
+    "typescript": "^6.0.2"
+  }
+}

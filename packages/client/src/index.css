@@ -1,0 +1,464 @@
+@import "tailwindcss";
+
+/* ===== Font Faces (from reference) ===== */
+@font-face {
+  font-family: 'Pretendard';
+  src: url('https://cdn.jsdelivr.net/gh/Project-Noonnu/noonfonts_2107@1.1/Pretendard-Regular.woff') format('woff');
+  font-weight: 400;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'NeoDunggeunmo';
+  src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2001@1.3/NeoDunggeunmo.woff') format('woff');
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'S-CoreDream';
+  src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_six@1.2/S-CoreDream-3Light.woff') format('woff');
+  font-weight: normal;
+  font-style: normal;
+}
+
+/* ===== Tailwind v4 Theme ===== */
+@theme {
+  --color-cy-cyan: #55B2D4;
+  --color-cy-cyan-dark: #298EB5;
+  --color-cy-cyan-text: #0F465E;
+  --color-cy-white: #ffffff;
+  --color-cy-inner-bg: #EEEEEE;
+  --color-cy-border: #999999;
+  --color-cy-border-light: #DDDDDD;
+  --color-cy-bg-gray: #A0A0A0;
+  --color-cy-tag-red: #EE3E61;
+  --color-cy-text: #333333;
+  --color-cy-text-light: #666666;
+  --color-cy-text-muted: #999999;
+  --color-cy-btn-bg: #D9D9D9;
+
+  --font-pretendard: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  --font-neo: 'NeoDunggeunmo', 'Courier New', monospace;
+  --font-score: 'S-CoreDream', sans-serif;
+}
+
+/* ===== Global Reset ===== */
+* {
+  box-sizing: border-box;
+}
+
+html, body {
+  padding: 0;
+  margin: 0;
+  font-family: var(--font-pretendard);
+}
+
+body {
+  background-color: var(--color-cy-bg-gray);
+  background-image:
+    repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 15px,
+      #919191 15px,
+      #919191 16px
+    ),
+    repeating-linear-gradient(
+      90deg,
+      transparent,
+      transparent 15px,
+      #919191 15px,
+      #919191 16px
+    );
+  background-size: 16px 16px;
+  color: var(--color-cy-text);
+  min-height: 100vh;
+}
+
+#root {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+/* ===== Pixel Rendering ===== */
+.pixel-render {
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+}
+
+/* ===== Cyworld Frame (3-layer) ===== */
+.cyframe-outer {
+  background-color: var(--color-cy-cyan);
+  border: 1px solid black;
+  border-radius: 10px;
+  padding: 20px;
+  position: relative;
+}
+
+.cyframe-dashed {
+  border: 1.5px dashed rgba(255, 255, 255, 0.85);
+  border-radius: 10px;
+  padding: 6px;
+}
+
+.cyframe-inner {
+  background-color: var(--color-cy-inner-bg);
+  border: 1px solid black;
+  border-radius: 10px;
+  padding: 8px;
+}
+
+/* ===== Bookmark Tabs (Right side, outside frame) ===== */
+.bookmark-tab {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-score);
+  font-weight: 300;
+  width: 44px;
+  height: 26px;
+  border: 1px solid black;
+  border-left: 0;
+  border-radius: 0 5px 5px 0;
+  cursor: pointer;
+  font-size: 9px;
+  text-decoration: none;
+  transition: background-color 0.15s, color 0.15s;
+}
+
+.bookmark-tab.inactive {
+  background-color: var(--color-cy-cyan-dark);
+  color: white;
+}
+
+.bookmark-tab.inactive:hover {
+  background-color: #3aa0c5;
+}
+
+.bookmark-tab.active {
+  background-color: white;
+  color: black;
+}
+
+/* ===== Cyworld Header Bar ===== */
+.cy-header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  height: 32px;
+  padding: 0 4px;
+}
+
+.cy-header-counter {
+  font-family: var(--font-neo);
+  font-size: 10px;
+  width: 180px;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.cy-header-title {
+  font-family: var(--font-neo);
+  color: var(--color-cy-cyan);
+  font-size: 13px;
+  flex: 1;
+  text-align: left;
+  padding-left: 12px;
+}
+
+.cy-header-settings {
+  font-family: var(--font-score);
+  font-weight: 300;
+  font-size: 9px;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+/* ===== Content Panels ===== */
+.cy-sidebar {
+  width: 180px;
+  background: white;
+  border: 1.5px solid var(--color-cy-border);
+  border-radius: 6px;
+  flex-shrink: 0;
+}
+
+.cy-main {
+  flex: 1;
+  background: white;
+  border: 1.5px solid var(--color-cy-border);
+  border-radius: 6px;
+  min-width: 0;
+  overflow: hidden;
+}
+
+/* ===== Page Header (reusable) ===== */
+.page-header-title {
+  color: var(--color-cy-cyan);
+  font-weight: 800;
+  font-size: 12px;
+}
+
+.page-header-subtitle {
+  font-size: 8px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.page-header-hr {
+  width: 100%;
+  border: none;
+  height: 1.5px;
+  background-color: var(--color-cy-border);
+  margin: 3px 0 5px 0;
+}
+
+/* ===== Cyworld Button ===== */
+.cy-btn {
+  font-family: var(--font-pretendard);
+  font-size: 9px;
+  padding: 1px 8px;
+  background: var(--color-cy-btn-bg);
+  border: 1px solid var(--color-cy-text-light);
+  border-radius: 4px;
+  cursor: pointer;
+  color: var(--color-cy-text);
+  transition: all 0.15s;
+}
+
+.cy-btn:hover {
+  background: var(--color-cy-text-light);
+  color: white;
+}
+
+/* ===== Tag Badge ===== */
+.cy-tag {
+  font-family: var(--font-pretendard);
+  font-size: 6px;
+  background-color: var(--color-cy-tag-red);
+  color: white;
+  padding: 0px 3px;
+  border-radius: 2px;
+  white-space: nowrap;
+  line-height: 1.4;
+}
+
+/* ===== Diary Card ===== */
+.diary-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  padding: 10px 12px;
+  margin-bottom: 8px;
+  border: 1.5px solid var(--color-cy-border-light);
+  border-radius: 5px;
+  cursor: pointer;
+  transition: border-color 0.15s;
+}
+
+.diary-card:hover {
+  border-color: var(--color-cy-cyan);
+}
+
+.diary-card-date {
+  display: inline-block;
+  background-color: var(--color-cy-cyan);
+  color: white;
+  font-family: var(--font-pretendard);
+  font-size: 8px;
+  text-align: center;
+  padding: 1px 6px;
+  border-radius: 2px;
+}
+
+.diary-card-title {
+  color: var(--color-cy-text-muted);
+  font-weight: bold;
+  font-size: 11px;
+  margin-top: 3px;
+}
+
+.diary-card-link {
+  font-family: var(--font-score);
+  color: #343131;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  font-size: 9px;
+  white-space: nowrap;
+}
+
+/* ===== BGM Table ===== */
+.bgm-table {
+  font-size: 8px;
+  color: var(--color-cy-text-muted);
+  font-family: var(--font-pretendard);
+  border-collapse: collapse;
+}
+
+.bgm-table thead tr {
+  background-color: var(--color-cy-inner-bg);
+  border-top: 1px solid var(--color-cy-border);
+  border-bottom: 1px solid var(--color-cy-border);
+}
+
+.bgm-table tbody tr {
+  border-bottom: 1.5px dotted var(--color-cy-border);
+}
+
+.bgm-table th,
+.bgm-table td {
+  padding: 2px 6px;
+  text-align: left;
+}
+
+.bgm-table tbody td {
+  color: var(--color-cy-cyan-text);
+}
+
+/* ===== Summary Stats ===== */
+.summary-divider {
+  width: 160px;
+  border: none;
+  border-top: 1px dashed var(--color-cy-border);
+}
+
+.summary-stat {
+  font-size: 7px;
+  font-weight: 600;
+}
+
+.summary-stat-value {
+  color: var(--color-cy-cyan);
+  margin-left: 8px;
+}
+
+/* ===== Sidebar Info ===== */
+.sidebar-info-item {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-family: var(--font-score);
+  font-size: 8px;
+}
+
+/* ===== Scrollbar Hide ===== */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+/* ===== Heart Animation ===== */
+@keyframes heartBeat {
+  0% { transform: scale(1); }
+  25% { transform: scale(1.3); }
+  50% { transform: scale(1); }
+}
+
+.heart-beat {
+  animation: heartBeat 0.4s ease-in-out;
+}
+
+/* ===== Login / Signup Pages ===== */
+.login-bg {
+  min-height: 100vh;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem 1.5rem;
+  position: relative;
+  background-color: #ffffff;
+  font-family: 'Pretendard', 'S-CoreDream', sans-serif;
+}
+
+.login-input-wrap {
+  position: relative;
+  width: 100%;
+}
+
+.login-input {
+  width: 100%;
+  padding: 16px 44px 16px 16px;
+  background: #f5f5f5;
+  border: 1.5px solid #e0e0e0;
+  border-radius: 12px;
+  font-size: 15px;
+  outline: none;
+  transition: border-color 0.2s;
+  font-family: inherit;
+  color: #333;
+}
+
+.login-input::placeholder {
+  color: #aaa;
+  font-size: 14px;
+}
+
+.login-input:focus {
+  border-color: #ff6000;
+  background: #fff;
+}
+
+.login-input-icon {
+  position: absolute;
+  right: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #999;
+  cursor: pointer;
+  background: none;
+  border: none;
+  padding: 2px;
+}
+
+.login-input-icon:hover {
+  color: #666;
+}
+
+.login-btn {
+  width: 100%;
+  padding: 16px;
+  background: #ff6000;
+  color: white;
+  border: none;
+  border-radius: 14px;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background-color 0.2s, transform 0.1s;
+  font-family: inherit;
+  margin-top: 8px;
+}
+
+.login-btn:hover {
+  background: #e55500;
+}
+
+.login-btn:active {
+  transform: scale(0.98);
+}
+
+.login-btn:disabled {
+  background: #ffb380;
+  cursor: not-allowed;
+}
+
+/* ===== Category Colors ===== */
+.category-event { background-color: #ffcccc; border-color: #ff9999; }
+.category-workshop { background-color: #ccffcc; border-color: #99cc99; }
+.category-meeting { background-color: #cce5ff; border-color: #99ccff; }
