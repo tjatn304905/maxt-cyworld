@@ -8,7 +8,7 @@ interface AuthState {
   error: string | null
   isAuthenticated: boolean
   login: (email: string, password: string) => Promise<void>
-  signup: (name: string, email: string, password: string, ilchonName: string) => Promise<void>
+  signup: (name: string, email: string, password: string, nickname: string) => Promise<void>
   logout: () => void
   checkAuth: () => Promise<void>
   clearError: () => void
@@ -32,10 +32,10 @@ export const useAuthStore = create<AuthState>((set) => ({
     }
   },
 
-  signup: async (name, email, password, ilchonName) => {
+  signup: async (name, email, password, nickname) => {
     set({ isLoading: true, error: null })
     try {
-      const { user } = await authService.signup({ name, email, password, ilchonName })
+      const { user } = await authService.signup({ name, email, password, nickname })
       set({ user, isAuthenticated: true, isLoading: false })
     } catch (err: any) {
       const message = err.response?.data?.error || '회원가입에 실패했습니다.'

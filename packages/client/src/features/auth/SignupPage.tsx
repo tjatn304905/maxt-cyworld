@@ -8,7 +8,7 @@ export default function SignupPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [confirmPw, setConfirmPw] = useState('')
-  const [ilchonName, setIlchonName] = useState('')
+  const [nickname, setNickname] = useState('')
   const [showPw, setShowPw] = useState(false)
   const [step, setStep] = useState<'verify' | 'form'>('verify')
   const { signup, isLoading, error, clearError } = useAuthStore()
@@ -20,7 +20,7 @@ export default function SignupPage() {
       return
     }
     try {
-      await signup(name, email, password, ilchonName)
+      await signup(name, email, password, nickname)
       navigate('/')
     } catch {
       // error is set in store
@@ -160,8 +160,8 @@ export default function SignupPage() {
         <div className="login-input-wrap">
           <input
             type="text"
-            value={ilchonName}
-            onChange={(e) => { setIlchonName(e.target.value); clearError() }}
+            value={nickname}
+            onChange={(e) => { setNickname(e.target.value); clearError() }}
             placeholder="일촌명 (ex: 팀장님짱, 코딩요정)"
             className="login-input"
             required

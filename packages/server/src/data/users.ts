@@ -1,58 +1,55 @@
 import type { User } from '@maxt/shared'
+import pool from '../db/pool.js'
 
 interface StoredUser extends User {
-  passwordHash: string
+  password: string
 }
 
-// In-memory dummy database
-const users: StoredUser[] = [
-  {
-    id: '1',
-    name: '김팀장',
-    email: 'kim@maxt.com',
-    ilchonName: '팀장님짱',
-    passwordHash: '$2a$10$xJ0Bz3z5z5z5z5z5z5z5z.placeholder', // will be set on startup
-    createdAt: '2024-01-01',
-  },
-]
-
-let initialized = false
-
-export async function initDummyData() {
-  if (initialized) return
-  const bcrypt = await import('bcryptjs')
-  // Set default password "1234" for the demo user
-  users[0].passwordHash = await bcrypt.hash('1234', 10)
-  initialized = true
+export async function findUserByEmail(email: string): Promise<StoredUser | undefined> {
+  const { rows } = await pool.query(
+    `SELECT id, email, password, name, nickname, role, created_at FROM users WHERE email = $1`,
+    [email]
+  )
+  if (rows.length === 0) return undefined
+  return mapRow(rows[0])
 }
 
-export function findUserByEmail(email: string): StoredUser | undefined {
-  return users.find((u) => u.email === email)
+export async function findUserById(id: string): Promise<StoredUser | undefined> {
+  const { rows } = await pool.query(
+    `SELECT id, email, password, name, nickname, role, created_at FROM users WHERE id = $1`,
+    [id]
+  )
+  if (rows.length === 0) return undefined
+  return mapRow(rows[0])
 }
 
-export function findUserById(id: string): StoredUser | undefined {
-  return users.find((u) => u.id === id)
-}
-
-export function createUser(data: {
+export async function createUser(data: {
   name: string
   email: string
   passwordHash: string
-  ilchonName: string
-}): StoredUser {
-  const newUser: StoredUser = {
-    id: String(Date.now()),
-    name: data.name,
-    email: data.email,
-    ilchonName: data.ilchonName,
-    passwordHash: data.passwordHash,
-    createdAt: new Date().toISOString().slice(0, 10),
-  }
-  users.push(newUser)
-  return newUser
+  nickname: string
+}): Promise<StoredUser> {
+  const { rows } = await pool.query(
+    `INSERT INTO users (email, password, name, nickname) VALUES ($1, $2, $3, $4)
+     RETURNING id, email, password, name, nickname, role, created_at`,
+    [data.email, data.passwordHash, data.name, data.nickname]
+  )
+  return mapRow(rows[0])
 }
 
 export function toPublicUser(user: StoredUser): User {
-  const { passwordHash, ...publicUser } = user
+  const { password, ...publicUser } = user
   return publicUser
+}
+
+function mapRow(row: any): StoredUser {
+  return {
+    id: row.id,
+    name: row.name,
+    email: row.email,
+    nickname: row.nickname,
+    role: row.role,
+    createdAt: row.created_at instanceof Date ? row.created_at.toISOString() : row.created_at,
+    password: row.password,
+  }
 }

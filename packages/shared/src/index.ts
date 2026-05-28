@@ -3,7 +3,8 @@ export interface User {
   id: string
   name: string
   email: string
-  ilchonName: string
+  nickname: string
+  role: 'ADMIN' | 'USER'
   createdAt: string
 }
 
@@ -16,7 +17,7 @@ export interface SignupRequest {
   name: string
   email: string
   password: string
-  ilchonName: string
+  nickname: string
 }
 
 export interface AuthResponse {
@@ -37,6 +38,23 @@ export interface AvatarConfig {
   color?: string
 }
 
+export type ItemCategory = 'HAIR' | 'FACE' | 'CLOTHES' | 'ACCESSORY'
+
+export interface AvatarItem {
+  id: number
+  category: ItemCategory
+  name: string
+  imageUrl: string
+  isDefault: boolean
+}
+
+export interface UserAvatar {
+  hair: { id: number; name: string; imageUrl: string } | null
+  face: { id: number; name: string; imageUrl: string } | null
+  cloth: { id: number; name: string; imageUrl: string } | null
+  accessory: { id: number; name: string; imageUrl: string } | null
+}
+
 // ===== Data Types =====
 export interface DiaryEntry {
   id: number
@@ -45,6 +63,30 @@ export interface DiaryEntry {
   category: 'Event' | 'Workshop' | 'Meeting'
   content: string
   author: string
+}
+
+export interface HistoryPost {
+  id: number
+  category: string
+  title: string
+  content: string
+  eventDate: string
+  createdAt: string
+  updatedAt: string
+  author: {
+    id: string
+    name: string
+    nickname: string
+  }
+  representativeImage: string | null
+  likeCount: number
+  commentCount: number
+}
+
+export interface PostImage {
+  id: number
+  imageUrl: string
+  isRepresentative: boolean
 }
 
 export interface BoardPost {
@@ -60,9 +102,11 @@ export interface Comment {
   id: number
   postId: number
   parentId: number | null
-  author: string
+  userId?: string
+  author: string | { name: string; nickname: string }
   content: string
-  date: string
+  date?: string
+  createdAt?: string
 }
 
 export interface PhotoItem {

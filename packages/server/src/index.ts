@@ -3,7 +3,11 @@ import cors from 'cors'
 import helmet from 'helmet'
 import morgan from 'morgan'
 import authRoutes from './routes/auth.js'
-import { initDummyData } from './data/users.js'
+import postRoutes from './routes/posts.js'
+import commentRoutes from './routes/comments.js'
+import likeRoutes from './routes/likes.js'
+import avatarRoutes from './routes/avatars.js'
+import { seed } from './db/seed.js'
 
 const app = express()
 const PORT = process.env.PORT || 3001
@@ -16,6 +20,10 @@ app.use(morgan('dev'))
 
 // Routes
 app.use('/api/auth', authRoutes)
+app.use('/api/posts', postRoutes)
+app.use('/api/posts', commentRoutes)
+app.use('/api/posts', likeRoutes)
+app.use('/api', avatarRoutes)
 
 // Health check
 app.get('/api/health', (_req, res) => {
@@ -24,7 +32,7 @@ app.get('/api/health', (_req, res) => {
 
 // Start
 async function start() {
-  await initDummyData()
+  await seed()
   app.listen(PORT, () => {
     console.log(`🚀 Server running on http://localhost:${PORT}`)
     console.log(`📧 Demo account: kim@maxt.com / 1234`)
