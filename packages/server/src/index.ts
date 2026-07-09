@@ -39,11 +39,17 @@ app.get('/api/health', (_req, res) => {
 
 // Start
 async function start() {
-  await seed()
+  // Listen first so the platform port scan (Render) succeeds even if seeding is slow or fails
   app.listen(PORT, () => {
     console.log(`🚀 Server running on http://localhost:${PORT}`)
     console.log(`📧 Demo account: kim@maxt.com / 1234`)
   })
+
+  try {
+    await seed()
+  } catch (err) {
+    console.error('❌ Seed failed:', err)
+  }
 }
 
 start()
