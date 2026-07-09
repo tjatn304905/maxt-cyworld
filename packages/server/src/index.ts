@@ -12,9 +12,16 @@ import { seed } from './db/seed.js'
 const app = express()
 const PORT = process.env.PORT || 3001
 
+// CORS_ORIGIN: comma-separated production origins (e.g. Vercel domain)
+const allowedOrigins = [
+  'http://localhost:5173',
+  'http://localhost:5174',
+  ...(process.env.CORS_ORIGIN?.split(',').map((o) => o.trim()).filter(Boolean) ?? []),
+]
+
 // Middleware
 app.use(helmet())
-app.use(cors({ origin: ['http://localhost:5173', 'http://localhost:5174'], credentials: true }))
+app.use(cors({ origin: allowedOrigins, credentials: true }))
 app.use(express.json())
 app.use(morgan('dev'))
 

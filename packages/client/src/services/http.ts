@@ -1,7 +1,11 @@
 import axios from 'axios'
 
+// VITE_API_URL: API server origin for production (e.g. Render URL).
+// Empty in dev — the Vite proxy forwards /api to the local server.
+const apiOrigin = import.meta.env.VITE_API_URL ?? ''
+
 const api = axios.create({
-  baseURL: '/api',
+  baseURL: `${apiOrigin}/api`,
   headers: { 'Content-Type': 'application/json' },
 })
 
