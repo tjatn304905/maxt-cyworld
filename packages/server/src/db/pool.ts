@@ -9,9 +9,10 @@ const pool = new pg.Pool({
   ssl: useSsl ? { rejectUnauthorized: false } : undefined,
 })
 
+// Supabase pooler drops idle connections periodically — log and let pg
+// replace the client instead of killing the process (crash-loop guard)
 pool.on('error', (err) => {
-  console.error('Unexpected error on idle client', err)
-  process.exit(-1)
+  console.error('Unexpected error on idle client (recovered):', err.message)
 })
 
 export default pool
