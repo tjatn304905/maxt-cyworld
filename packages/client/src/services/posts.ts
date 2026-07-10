@@ -1,7 +1,6 @@
 import type {
   HistoryPost,
   PostImage,
-  PostType,
   CreatePostRequest,
   UpdatePostRequest,
   Comment,
@@ -18,7 +17,6 @@ export interface PostListResponse {
 export type PostDetail = HistoryPost & { images: PostImage[] }
 
 export async function getPosts(params?: {
-  type?: PostType
   category?: string
   page?: number
   limit?: number

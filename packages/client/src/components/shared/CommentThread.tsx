@@ -1,13 +1,12 @@
 import { useEffect, useState, type FormEvent } from 'react'
 import { Send } from 'lucide-react'
-import type { Comment, PostType } from '../../types'
+import type { Comment } from '../../types'
 import { usePostStore } from '../../store/postStore'
 import { useAuthStore } from '../../store/authStore'
 import { useRole } from '../../hooks/useRole'
 
 interface CommentThreadProps {
   postId: number
-  postType: PostType
 }
 
 function authorName(comment: Comment): string {
@@ -20,7 +19,7 @@ function formatDate(value?: string): string {
   return value.slice(0, 10)
 }
 
-export default function CommentThread({ postId, postType }: CommentThreadProps) {
+export default function CommentThread({ postId }: CommentThreadProps) {
   const user = useAuthStore((state) => state.user)
   const { isAdmin } = useRole()
   const comments = usePostStore((state) => state.commentsByPost[postId]) ?? []
@@ -41,14 +40,14 @@ export default function CommentThread({ postId, postType }: CommentThreadProps) 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault()
     if (!newComment.trim()) return
-    await addComment(postId, postType, newComment.trim())
+    await addComment(postId, newComment.trim())
     setNewComment('')
   }
 
   const handleReply = async (e: FormEvent, parentId: number) => {
     e.preventDefault()
     if (!replyText.trim()) return
-    await addComment(postId, postType, replyText.trim(), parentId)
+    await addComment(postId, replyText.trim(), parentId)
     setReplyText('')
     setReplyTo(null)
   }
@@ -63,7 +62,7 @@ export default function CommentThread({ postId, postType }: CommentThreadProps) 
 
   const handleDelete = async (commentId: number) => {
     if (!window.confirm('댓글을 삭제할까요?')) return
-    await deleteComment(postId, postType, commentId)
+    await deleteComment(postId, commentId)
   }
 
   const renderComment = (comment: Comment, isReply: boolean) => {

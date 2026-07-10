@@ -258,79 +258,6 @@ a {
   line-height: 1.4;
 }
 
-/* ===== Diary Card ===== */
-.diary-card {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  width: 100%;
-  padding: 10px 12px;
-  margin-bottom: 8px;
-  border: 1.5px solid var(--color-cy-border-light);
-  border-radius: 5px;
-  cursor: pointer;
-  transition: border-color 0.15s;
-}
-
-.diary-card:hover {
-  border-color: var(--color-cy-cyan);
-}
-
-.diary-card-date {
-  display: inline-block;
-  background-color: var(--color-cy-cyan);
-  color: white;
-  font-family: var(--font-pretendard);
-  font-size: 8px;
-  text-align: center;
-  padding: 1px 6px;
-  border-radius: 2px;
-}
-
-.diary-card-title {
-  color: var(--color-cy-text-muted);
-  font-weight: bold;
-  font-size: 11px;
-  margin-top: 3px;
-}
-
-.diary-card-link {
-  font-family: var(--font-score);
-  color: #343131;
-  text-decoration: underline;
-  text-underline-offset: 2px;
-  font-size: 9px;
-  white-space: nowrap;
-}
-
-/* ===== BGM Table ===== */
-.bgm-table {
-  font-size: 8px;
-  color: var(--color-cy-text-muted);
-  font-family: var(--font-pretendard);
-  border-collapse: collapse;
-}
-
-.bgm-table thead tr {
-  background-color: var(--color-cy-inner-bg);
-  border-top: 1px solid var(--color-cy-border);
-  border-bottom: 1px solid var(--color-cy-border);
-}
-
-.bgm-table tbody tr {
-  border-bottom: 1.5px dotted var(--color-cy-border);
-}
-
-.bgm-table th,
-.bgm-table td {
-  padding: 2px 6px;
-  text-align: left;
-}
-
-.bgm-table tbody td {
-  color: var(--color-cy-cyan-text);
-}
-
 /* ===== Summary Stats ===== */
 .summary-divider {
   width: 160px;
@@ -462,13 +389,6 @@ a {
   background: #ffb380;
   cursor: not-allowed;
 }
-
-/* ===== Category Colors ===== */
-.category-event { background-color: #ffcccc; border-color: #ff9999; }
-.category-workshop { background-color: #ccffcc; border-color: #99cc99; }
-.category-meeting { background-color: #cce5ff; border-color: #99ccff; }
-.category-free { background-color: var(--color-cy-pastel-yellow); border-color: #e5d9a0; }
-.category-photo { background-color: var(--color-cy-pastel-pink); border-color: #f0b8c8; }
 
 /* ===== Content Panel (pastel box) ===== */
 .cy-panel {
@@ -679,6 +599,78 @@ a {
   font-family: var(--font-neo);
   font-size: 10px;
   padding: 4px 8px;
+}
+
+/* ===== Rich Text Editor (TipTap) ===== */
+.cy-editor {
+  background: white;
+  border: 1.5px solid var(--color-cy-border-light);
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.cy-editor-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  flex-wrap: wrap;
+  padding: 4px 6px;
+  background-color: var(--color-cy-inner-bg);
+  border-bottom: 1px solid var(--color-cy-border-light);
+}
+
+.cy-editor-sep {
+  width: 1px;
+  height: 12px;
+  background-color: var(--color-cy-border-light);
+  margin: 0 2px;
+}
+
+.cy-editor-color {
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+  border: 1px solid rgba(0, 0, 0, 0.2);
+  cursor: pointer;
+}
+
+.cy-editor-content {
+  min-height: 220px;
+  padding: 10px 12px;
+  font-size: 10px;
+  line-height: 1.7;
+  outline: none;
+}
+
+.cy-editor-content p.is-editor-empty:first-child::before {
+  content: attr(data-placeholder);
+  color: var(--color-cy-text-muted);
+  float: left;
+  height: 0;
+  pointer-events: none;
+}
+
+.cy-editor-content img {
+  max-width: 100%;
+  border-radius: 3px;
+}
+
+/* ===== Post Body (detail view rendering) ===== */
+.cy-post-body {
+  font-size: 10px;
+  line-height: 1.8;
+  color: var(--color-cy-text);
+  word-break: break-word;
+}
+
+.cy-post-body img {
+  max-width: 100%;
+  border-radius: 3px;
+  border: 1px solid var(--color-cy-border-light);
+}
+
+.cy-post-body p {
+  margin: 0 0 4px 0;
 }
 
 /* ===== Retro Login / Signup ===== */
