@@ -5,15 +5,23 @@ import { findUserRole } from '../data/users.js'
 
 const router = Router()
 
-// GET /api/posts/:postId/comments — list with threaded structure
+// GET /api/posts/:postId/comments — list with threaded structure + author avatar
 router.get('/:postId/comments', async (req, res) => {
   const { postId } = req.params
 
   const { rows } = await pool.query(
     `SELECT c.id, c.post_id, c.user_id, c.parent_id, c.content, c.created_at, c.updated_at,
-            u.name AS author_name, u.nickname AS author_nickname
+            u.name AS author_name, u.nickname AS author_nickname,
+            h.render_key AS hair_key, f.render_key AS face_key, cl.render_key AS cloth_key,
+            b.render_key AS bottom_key, ac.render_key AS accessory_key
      FROM comments c
      LEFT JOIN users u ON c.user_id = u.id
+     LEFT JOIN avatars a ON a.user_id = u.id
+     LEFT JOIN avatar_items h ON a.hair_id = h.id
+     LEFT JOIN avatar_items f ON a.face_id = f.id
+     LEFT JOIN avatar_items cl ON a.cloth_id = cl.id
+     LEFT JOIN avatar_items b ON a.bottom_id = b.id
+     LEFT JOIN avatar_items ac ON a.accessory_id = ac.id
      WHERE c.post_id = $1
      ORDER BY c.created_at ASC`,
     [postId]
@@ -30,6 +38,7 @@ router.get('/:postId/comments', async (req, res) => {
     author: {
       name: row.author_name,
       nickname: row.author_nickname,
+      avatarKeys: [row.hair_key, row.face_key, row.cloth_key, row.bottom_key, row.accessory_key],
     },
   }))
 
