@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import type { ItemCategory } from '../../types'
 import { useAvatarStore } from '../../store/avatarStore'
 import PixelAvatar, { avatarConfigFromRenderKeys } from '../ui/PixelAvatar'
+import { resolveRenderKey } from '../ui/avatarCatalog'
 
 const CATEGORY_TABS: { key: ItemCategory; label: string }[] = [
   { key: 'HAIR', label: '헤어' },
@@ -46,7 +47,9 @@ export default function AvatarCustomizer() {
   // preview config from currently drafted item ids
   const previewConfig = useMemo(() => {
     const selectedIds = Object.values(draft).filter((id): id is number => id != null)
-    const keys = items.filter((item) => selectedIds.includes(item.id)).map((item) => item.renderKey)
+    const keys = items
+      .filter((item) => selectedIds.includes(item.id))
+      .map((item) => resolveRenderKey(item.category, item.name, item.renderKey))
     return avatarConfigFromRenderKeys(keys)
   }, [items, draft])
 
@@ -78,7 +81,9 @@ export default function AvatarCustomizer() {
 
         <div className='grid grid-cols-4 gap-1.5 max-h-52 overflow-y-auto scrollbar-hide pr-0.5'>
           {tabItems.map((item) => {
-            const config = avatarConfigFromRenderKeys([item.renderKey])
+            const config = avatarConfigFromRenderKeys([
+              resolveRenderKey(item.category, item.name, item.renderKey),
+            ])
             const isSelected = selectedId === item.id
             return (
               <button

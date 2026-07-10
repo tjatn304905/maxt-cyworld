@@ -2,6 +2,7 @@ import { memo, type CSSProperties, type ReactNode } from 'react'
 import type {
   HeadType, BodyType, FaceType, BottomType, AccessoryType, AvatarConfig, UserAvatar,
 } from '../../types'
+import { resolveRenderKey } from './avatarCatalog'
 
 interface PixelAvatarProps {
   size?: number
@@ -32,12 +33,14 @@ export function avatarConfigFromRenderKeys(
 
 export function avatarConfigFromUserAvatar(avatar: UserAvatar | null): AvatarConfig {
   if (!avatar) return {}
+  // resolveRenderKey falls back to category+name lookup when the API
+  // response predates renderKey (old server builds)
   return avatarConfigFromRenderKeys([
-    avatar.hair?.renderKey,
-    avatar.face?.renderKey,
-    avatar.cloth?.renderKey,
-    avatar.bottom?.renderKey,
-    avatar.accessory?.renderKey,
+    avatar.hair ? resolveRenderKey('HAIR', avatar.hair.name, avatar.hair.renderKey) : null,
+    avatar.face ? resolveRenderKey('FACE', avatar.face.name, avatar.face.renderKey) : null,
+    avatar.cloth ? resolveRenderKey('CLOTHES', avatar.cloth.name, avatar.cloth.renderKey) : null,
+    avatar.bottom ? resolveRenderKey('BOTTOM', avatar.bottom.name, avatar.bottom.renderKey) : null,
+    avatar.accessory ? resolveRenderKey('ACCESSORY', avatar.accessory.name, avatar.accessory.renderKey) : null,
   ])
 }
 

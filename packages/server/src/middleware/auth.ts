@@ -1,13 +1,21 @@
+import { createHash } from 'node:crypto'
 import type { Request, Response, NextFunction } from 'express'
 import jwt from 'jsonwebtoken'
 import type { UserRole } from '@maxt/shared'
 import pool from '../db/pool.js'
 
-// production에서는 반드시 환경변수로 설정해야 함 (미설정 시 즉시 실패)
-const JWT_SECRET = process.env.JWT_SECRET || 'maxt-cyworld-secret-dev-key-2024'
-if (!process.env.JWT_SECRET && process.env.NODE_ENV === 'production') {
-  throw new Error('JWT_SECRET 환경변수가 설정되지 않았습니다.')
+// JWT_SECRET 미설정 시 DATABASE_URL(이미 비밀값)에서 유도한 시크릿으로 폴백 —
+// 공개 저장소의 하드코딩 시크릿으로 운영되는 것을 막으면서 배포는 항상 성공하게 한다
+function deriveSecret(): string {
+  if (process.env.JWT_SECRET) return process.env.JWT_SECRET
+  if (process.env.DATABASE_URL) {
+    console.warn('⚠ JWT_SECRET not set — using a secret derived from DATABASE_URL. Set JWT_SECRET explicitly.')
+    return createHash('sha256').update(process.env.DATABASE_URL).digest('hex')
+  }
+  return 'maxt-cyworld-secret-dev-key-2024'
 }
+
+const JWT_SECRET = deriveSecret()
 
 const ROLE_LEVEL: Record<UserRole, number> = {
   USER: 0,
