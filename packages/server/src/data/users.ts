@@ -1,5 +1,8 @@
-import type { User } from '@maxt/shared'
+import type { User, UserRole } from '@maxt/shared'
 import pool from '../db/pool.js'
+
+// pool or transaction client — both expose query()
+type Queryable = { query: (text: string, params?: any[]) => Promise<any> }
 
 interface StoredUser extends User {
   password: string
@@ -23,13 +26,22 @@ export async function findUserById(id: string): Promise<StoredUser | undefined> 
   return mapRow(rows[0])
 }
 
-export async function createUser(data: {
-  name: string
-  email: string
-  passwordHash: string
-  nickname: string
-}): Promise<StoredUser> {
-  const { rows } = await pool.query(
+export async function findUserRole(id: string): Promise<UserRole | undefined> {
+  const { rows } = await pool.query(`SELECT role FROM users WHERE id = $1`, [id])
+  if (rows.length === 0) return undefined
+  return rows[0].role
+}
+
+export async function createUser(
+  data: {
+    name: string
+    email: string
+    passwordHash: string
+    nickname: string
+  },
+  db: Queryable = pool
+): Promise<StoredUser> {
+  const { rows } = await db.query(
     `INSERT INTO users (email, password, name, nickname) VALUES ($1, $2, $3, $4)
      RETURNING id, email, password, name, nickname, role, created_at`,
     [data.email, data.passwordHash, data.name, data.nickname]

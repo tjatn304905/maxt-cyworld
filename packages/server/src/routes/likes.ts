@@ -1,6 +1,6 @@
 import { Router } from 'express'
 import pool from '../db/pool.js'
-import { verifyAuth, type AuthRequest } from '../middleware/auth.js'
+import { verifyAuth, optionalAuth, type AuthRequest } from '../middleware/auth.js'
 
 const router = Router()
 
@@ -8,6 +8,15 @@ const router = Router()
 router.post('/:postId/like', verifyAuth, async (req, res) => {
   const authReq = req as AuthRequest
   const { postId } = req.params
+
+  const { rows: postRows } = await pool.query(
+    `SELECT id FROM history_posts WHERE id = $1`,
+    [postId]
+  )
+  if (postRows.length === 0) {
+    res.status(404).json({ error: '게시물을 찾을 수 없습니다.' })
+    return
+  }
 
   // Check if already liked
   const { rows: existing } = await pool.query(
@@ -32,25 +41,26 @@ router.post('/:postId/like', verifyAuth, async (req, res) => {
   }
 })
 
-// GET /api/posts/:postId/like — check if current user liked
-router.get('/:postId/like', verifyAuth, async (req, res) => {
+// GET /api/posts/:postId/like — like status (anonymous allowed: liked=false)
+router.get('/:postId/like', optionalAuth, async (req, res) => {
   const authReq = req as AuthRequest
   const { postId } = req.params
 
-  const { rows } = await pool.query(
-    `SELECT 1 FROM likes WHERE user_id = $1 AND post_id = $2`,
-    [authReq.userId, postId]
-  )
+  let liked = false
+  if (authReq.userId) {
+    const { rows } = await pool.query(
+      `SELECT 1 FROM likes WHERE user_id = $1 AND post_id = $2`,
+      [authReq.userId, postId]
+    )
+    liked = rows.length > 0
+  }
 
   const { rows: countRows } = await pool.query(
     `SELECT COUNT(*)::int AS count FROM likes WHERE post_id = $1`,
     [postId]
   )
 
-  res.json({
-    liked: rows.length > 0,
-    count: countRows[0].count,
-  })
+  res.json({ liked, count: countRows[0].count })
 })
 
 export default router

@@ -1,22 +1,30 @@
 import { Router } from 'express'
+import type { CreatePostRequest, UpdatePostRequest } from '@maxt/shared'
 import pool from '../db/pool.js'
-import { verifyAuth, type AuthRequest } from '../middleware/auth.js'
+import { verifyAuth, requireRole, type AuthRequest } from '../middleware/auth.js'
 
 const router = Router()
 
-// GET /api/posts — list with pagination, category filter
-router.get('/', async (req, res) => {
-  const { category, page = '1', limit = '20' } = req.query as Record<string, string>
-  const offset = (Math.max(1, parseInt(page)) - 1) * parseInt(limit)
-  const pageSize = Math.min(100, Math.max(1, parseInt(limit)))
+const POST_TYPES = ['DIARY', 'PHOTO', 'BOARD']
 
-  let where = ''
+// GET /api/posts — list with pagination, type/category filter
+router.get('/', async (req, res) => {
+  const { type, category, page = '1', limit = '20' } = req.query as Record<string, string>
+  const pageSize = Math.min(100, Math.max(1, parseInt(limit)))
+  const offset = (Math.max(1, parseInt(page)) - 1) * pageSize
+
+  const conditions: string[] = []
   const params: any[] = []
 
+  if (type) {
+    params.push(type)
+    conditions.push(`hp.post_type = $${params.length}`)
+  }
   if (category) {
     params.push(category)
-    where = `WHERE hp.category = $${params.length}`
+    conditions.push(`hp.category = $${params.length}`)
   }
+  const where = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : ''
 
   const countResult = await pool.query(
     `SELECT COUNT(*) FROM history_posts hp ${where}`,
@@ -26,7 +34,7 @@ router.get('/', async (req, res) => {
 
   const dataParams = [...params, pageSize, offset]
   const { rows } = await pool.query(
-    `SELECT hp.id, hp.category, hp.title, hp.content, hp.event_date,
+    `SELECT hp.id, hp.post_type, hp.category, hp.title, hp.content, hp.event_date,
             hp.created_at, hp.updated_at,
             u.id AS author_id, u.name AS author_name, u.nickname AS author_nickname,
             pi.image_url AS representative_image,
@@ -35,7 +43,7 @@ router.get('/', async (req, res) => {
      FROM history_posts hp
      LEFT JOIN users u ON hp.author_id = u.id
      LEFT JOIN LATERAL (
-       SELECT image_url FROM post_images WHERE post_id = hp.id AND is_representative = TRUE LIMIT 1
+       SELECT image_url FROM post_images WHERE post_id = hp.id ORDER BY sort_order, id LIMIT 1
      ) pi ON TRUE
      LEFT JOIN LATERAL (
        SELECT COUNT(*) AS like_count FROM likes WHERE post_id = hp.id
@@ -62,7 +70,7 @@ router.get('/:id', async (req, res) => {
   const { id } = req.params
 
   const { rows } = await pool.query(
-    `SELECT hp.id, hp.category, hp.title, hp.content, hp.event_date,
+    `SELECT hp.id, hp.post_type, hp.category, hp.title, hp.content, hp.event_date,
             hp.created_at, hp.updated_at,
             u.id AS author_id, u.name AS author_name, u.nickname AS author_nickname,
             COALESCE(lc.like_count, 0)::int AS like_count,
@@ -84,22 +92,32 @@ router.get('/:id', async (req, res) => {
     return
   }
 
-  const { rows: images } = await pool.query(
-    `SELECT id, image_url, is_representative FROM post_images WHERE post_id = $1 ORDER BY id`,
+  const { rows: imageRows } = await pool.query(
+    `SELECT id, image_url, sort_order FROM post_images WHERE post_id = $1 ORDER BY sort_order, id`,
     [id]
   )
 
   const post = mapPostRow(rows[0])
+  const images = imageRows.map((img) => ({
+    id: img.id,
+    imageUrl: img.image_url,
+    sortOrder: img.sort_order,
+  }))
   res.json({ ...post, images })
 })
 
-// POST /api/posts — create (auth required)
-router.post('/', verifyAuth, async (req, res) => {
+// POST /api/posts — create (WRITER or ADMIN)
+router.post('/', verifyAuth, requireRole('WRITER'), async (req, res) => {
   const authReq = req as AuthRequest
-  const { category, title, content, eventDate, images } = req.body
+  const { postType = 'BOARD', category, title, content, eventDate, images } =
+    req.body as CreatePostRequest
 
   if (!category || !title || !content || !eventDate) {
     res.status(400).json({ error: '필수 항목을 모두 입력해주세요.' })
+    return
+  }
+  if (!POST_TYPES.includes(postType)) {
+    res.status(400).json({ error: '유효하지 않은 게시판 유형입니다.' })
     return
   }
 
@@ -108,17 +126,17 @@ router.post('/', verifyAuth, async (req, res) => {
     await client.query('BEGIN')
 
     const { rows } = await client.query(
-      `INSERT INTO history_posts (author_id, category, title, content, event_date)
-       VALUES ($1, $2, $3, $4, $5) RETURNING id, created_at`,
-      [authReq.userId, category, title, content, eventDate]
+      `INSERT INTO history_posts (author_id, post_type, category, title, content, event_date)
+       VALUES ($1, $2, $3, $4, $5, $6) RETURNING id, created_at`,
+      [authReq.userId, postType, category, title, content, eventDate]
     )
     const postId = rows[0].id
 
     if (Array.isArray(images) && images.length > 0) {
       for (let i = 0; i < images.length; i++) {
         await client.query(
-          `INSERT INTO post_images (post_id, image_url, is_representative) VALUES ($1, $2, $3)`,
-          [postId, images[i].imageUrl, i === 0]
+          `INSERT INTO post_images (post_id, image_url, sort_order) VALUES ($1, $2, $3)`,
+          [postId, images[i].imageUrl, i]
         )
       }
     }
@@ -134,17 +152,14 @@ router.post('/', verifyAuth, async (req, res) => {
 })
 
 // PUT /api/posts/:id — update (author or ADMIN only)
-router.put('/:id', verifyAuth, async (req, res) => {
+router.put('/:id', verifyAuth, requireRole('WRITER'), async (req, res) => {
   const authReq = req as AuthRequest
   const { id } = req.params
-  const { category, title, content, eventDate } = req.body
+  const { category, title, content, eventDate, images } = req.body as UpdatePostRequest
 
-  // Check ownership or admin
   const { rows: postRows } = await pool.query(
-    `SELECT hp.author_id, u.role FROM history_posts hp
-     LEFT JOIN users u ON u.id = $1
-     WHERE hp.id = $2`,
-    [authReq.userId, id]
+    `SELECT author_id FROM history_posts WHERE id = $1`,
+    [id]
   )
 
   if (postRows.length === 0) {
@@ -152,31 +167,51 @@ router.put('/:id', verifyAuth, async (req, res) => {
     return
   }
 
-  if (postRows[0].author_id !== authReq.userId && postRows[0].role !== 'ADMIN') {
+  if (postRows[0].author_id !== authReq.userId && authReq.role !== 'ADMIN') {
     res.status(403).json({ error: '수정 권한이 없습니다.' })
     return
   }
 
-  await pool.query(
-    `UPDATE history_posts SET category = COALESCE($1, category), title = COALESCE($2, title),
-     content = COALESCE($3, content), event_date = COALESCE($4, event_date), updated_at = CURRENT_TIMESTAMP
-     WHERE id = $5`,
-    [category, title, content, eventDate, id]
-  )
+  const client = await pool.connect()
+  try {
+    await client.query('BEGIN')
 
-  res.json({ message: '게시물이 수정되었습니다.' })
+    await client.query(
+      `UPDATE history_posts SET category = COALESCE($1, category), title = COALESCE($2, title),
+       content = COALESCE($3, content), event_date = COALESCE($4, event_date), updated_at = CURRENT_TIMESTAMP
+       WHERE id = $5`,
+      [category, title, content, eventDate, id]
+    )
+
+    // replace images only when the field is provided
+    if (Array.isArray(images)) {
+      await client.query(`DELETE FROM post_images WHERE post_id = $1`, [id])
+      for (let i = 0; i < images.length; i++) {
+        await client.query(
+          `INSERT INTO post_images (post_id, image_url, sort_order) VALUES ($1, $2, $3)`,
+          [id, images[i].imageUrl, i]
+        )
+      }
+    }
+
+    await client.query('COMMIT')
+    res.json({ message: '게시물이 수정되었습니다.' })
+  } catch (err) {
+    await client.query('ROLLBACK')
+    throw err
+  } finally {
+    client.release()
+  }
 })
 
 // DELETE /api/posts/:id — delete (author or ADMIN only)
-router.delete('/:id', verifyAuth, async (req, res) => {
+router.delete('/:id', verifyAuth, requireRole('WRITER'), async (req, res) => {
   const authReq = req as AuthRequest
   const { id } = req.params
 
   const { rows: postRows } = await pool.query(
-    `SELECT hp.author_id, u.role FROM history_posts hp
-     LEFT JOIN users u ON u.id = $1
-     WHERE hp.id = $2`,
-    [authReq.userId, id]
+    `SELECT author_id FROM history_posts WHERE id = $1`,
+    [id]
   )
 
   if (postRows.length === 0) {
@@ -184,18 +219,32 @@ router.delete('/:id', verifyAuth, async (req, res) => {
     return
   }
 
-  if (postRows[0].author_id !== authReq.userId && postRows[0].role !== 'ADMIN') {
+  if (postRows[0].author_id !== authReq.userId && authReq.role !== 'ADMIN') {
     res.status(403).json({ error: '삭제 권한이 없습니다.' })
     return
   }
 
-  await pool.query(`DELETE FROM history_posts WHERE id = $1`, [id])
-  res.json({ message: '게시물이 삭제되었습니다.' })
+  const client = await pool.connect()
+  try {
+    await client.query('BEGIN')
+    await client.query(`DELETE FROM post_images WHERE post_id = $1`, [id])
+    await client.query(`DELETE FROM comments WHERE post_id = $1`, [id])
+    await client.query(`DELETE FROM likes WHERE post_id = $1`, [id])
+    await client.query(`DELETE FROM history_posts WHERE id = $1`, [id])
+    await client.query('COMMIT')
+    res.json({ message: '게시물이 삭제되었습니다.' })
+  } catch (err) {
+    await client.query('ROLLBACK')
+    throw err
+  } finally {
+    client.release()
+  }
 })
 
 function mapPostRow(row: any) {
   return {
     id: row.id,
+    postType: row.post_type,
     category: row.category,
     title: row.title,
     content: row.content,

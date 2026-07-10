@@ -1,6 +1,7 @@
 import { Router } from 'express'
 import pool from '../db/pool.js'
 import { verifyAuth, type AuthRequest } from '../middleware/auth.js'
+import { findUserRole } from '../data/users.js'
 
 const router = Router()
 
@@ -77,6 +78,39 @@ router.post('/:postId/comments', verifyAuth, async (req, res) => {
   res.status(201).json({ id: rows[0].id, message: '댓글이 작성되었습니다.' })
 })
 
+// PUT /api/posts/:postId/comments/:id — edit own comment (auth required)
+router.put('/:postId/comments/:id', verifyAuth, async (req, res) => {
+  const authReq = req as AuthRequest
+  const { id } = req.params
+  const { content } = req.body
+
+  if (!content) {
+    res.status(400).json({ error: '댓글 내용을 입력해주세요.' })
+    return
+  }
+
+  const { rows } = await pool.query(
+    `SELECT user_id FROM comments WHERE id = $1`,
+    [id]
+  )
+
+  if (rows.length === 0) {
+    res.status(404).json({ error: '댓글을 찾을 수 없습니다.' })
+    return
+  }
+
+  if (rows[0].user_id !== authReq.userId) {
+    res.status(403).json({ error: '수정 권한이 없습니다.' })
+    return
+  }
+
+  await pool.query(
+    `UPDATE comments SET content = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2`,
+    [content, id]
+  )
+  res.json({ message: '댓글이 수정되었습니다.' })
+})
+
 // DELETE /api/posts/:postId/comments/:id — delete own comment (auth required)
 router.delete('/:postId/comments/:id', verifyAuth, async (req, res) => {
   const authReq = req as AuthRequest
@@ -92,17 +126,14 @@ router.delete('/:postId/comments/:id', verifyAuth, async (req, res) => {
     return
   }
 
-  // Check if user is the author or an admin
-  const { rows: userRows } = await pool.query(
-    `SELECT role FROM users WHERE id = $1`,
-    [authReq.userId]
-  )
-
-  if (rows[0].user_id !== authReq.userId && userRows[0]?.role !== 'ADMIN') {
+  // author or admin only — delete replies first (no ON DELETE CASCADE on parent_id)
+  const role = await findUserRole(authReq.userId!)
+  if (rows[0].user_id !== authReq.userId && role !== 'ADMIN') {
     res.status(403).json({ error: '삭제 권한이 없습니다.' })
     return
   }
 
+  await pool.query(`DELETE FROM comments WHERE parent_id = $1`, [id])
   await pool.query(`DELETE FROM comments WHERE id = $1`, [id])
   res.json({ message: '댓글이 삭제되었습니다.' })
 })
