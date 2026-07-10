@@ -1,56 +1,65 @@
-import { useState, useCallback } from 'react'
-import type { BoardPost, Comment } from '../../types'
-import { INITIAL_POSTS, INITIAL_COMMENTS } from './data'
+import { useCallback, useEffect, useState } from 'react'
+import { usePostStore } from '../../store/postStore'
 
+// UI state + BOARD-type slice of postStore
 export function useBoard() {
-  const [posts, setPosts] = useState<BoardPost[]>(INITIAL_POSTS)
-  const [comments, setComments] = useState<Comment[]>(INITIAL_COMMENTS)
+  const list = usePostStore((state) => state.lists.BOARD)
+  const isLoading = usePostStore((state) => state.isLoading)
+  const error = usePostStore((state) => state.error)
+  const { fetchPosts, toggleLike, fetchLikeStatus } = usePostStore()
+
   const [expandedPost, setExpandedPost] = useState<number | null>(null)
   const [animatingHearts, setAnimatingHearts] = useState<Set<number>>(new Set())
 
-  const handleLike = useCallback((postId: number) => {
-    setAnimatingHearts((prev) => new Set([...prev, postId]))
-    setPosts((prev) =>
-      prev.map((p) => (p.id === postId ? { ...p, likes: p.likes + 1 } : p))
-    )
-    setTimeout(() => {
-      setAnimatingHearts((prev) => {
-        const next = new Set(prev)
-        next.delete(postId)
-        return next
-      })
-    }, 400)
-  }, [])
+  useEffect(() => {
+    fetchPosts('BOARD')
+  }, [fetchPosts])
 
-  const handleAddComment = useCallback(
-    (postId: number, content: string, parentId: number | null = null) => {
-      const newComment: Comment = {
-        id: Date.now(),
-        postId,
-        parentId,
-        author: '나',
-        content,
-        date: new Date().toISOString().slice(0, 10),
-      }
-      setComments((prev) => [...prev, newComment])
+  const handleLike = useCallback(
+    (postId: number) => {
+      setAnimatingHearts((prev) => new Set([...prev, postId]))
+      toggleLike(postId, 'BOARD')
+      setTimeout(() => {
+        setAnimatingHearts((prev) => {
+          const next = new Set(prev)
+          next.delete(postId)
+          return next
+        })
+      }, 400)
     },
-    []
+    [toggleLike]
   )
 
   const toggleExpand = useCallback(
     (postId: number) => {
-      setExpandedPost(expandedPost === postId ? null : postId)
+      const next = expandedPost === postId ? null : postId
+      setExpandedPost(next)
+      if (next != null) {
+        fetchLikeStatus(next)
+      }
     },
-    [expandedPost]
+    [expandedPost, fetchLikeStatus]
+  )
+
+  const goToPage = useCallback(
+    (page: number) => {
+      setExpandedPost(null)
+      fetchPosts('BOARD', page, list.limit)
+    },
+    [fetchPosts, list.limit]
   )
 
   return {
-    posts,
-    comments,
+    posts: list.posts,
+    total: list.total,
+    page: list.page,
+    limit: list.limit,
+    isLoading,
+    error,
     expandedPost,
     animatingHearts,
     handleLike,
-    handleAddComment,
     toggleExpand,
+    goToPage,
   }
 }

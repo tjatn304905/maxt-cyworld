@@ -1,57 +1,70 @@
-import { useState } from 'react'
-import { MUSIC_DATA } from './data'
+import { useEffect } from 'react'
+import { useBgmStore } from '../../store/bgmStore'
 
 export default function MusicBoard() {
-  const [allChecked, setAllChecked] = useState(false)
-  const [checked, setChecked] = useState<Set<number>>(new Set())
+  const { tracks, currentIndex, isPlaying, loadTracks, playTrack, togglePlay } = useBgmStore()
 
-  const handleAllClick = () => {
-    if (allChecked) {
-      setChecked(new Set())
-    } else {
-      setChecked(new Set(MUSIC_DATA.map((m) => m.id)))
+  useEffect(() => {
+    loadTracks()
+  }, [loadTracks])
+
+  const handleRowClick = (index: number) => {
+    if (index === currentIndex && isPlaying) {
+      togglePlay()
+      return
     }
-    setAllChecked(!allChecked)
-  }
-
-  const handleClick = (id: number) => {
-    setChecked((prev) => {
-      const next = new Set(prev)
-      if (next.has(id)) next.delete(id)
-      else next.add(id)
-      return next
-    })
+    playTrack(index)
   }
 
   return (
     <div>
-      <div className="flex items-end mt-3">
-        <div className="font-black text-xs text-cy-cyan mr-3">추억의 BGM</div>
-        <p className="text-[8px] font-medium mb-[1px]">TODAY CHOICE</p>
+      <div className='flex items-end mt-3'>
+        <div className='font-black text-xs text-cy-cyan mr-3'>추억의 BGM</div>
+        <p className='cy-widget-title mb-[1px]'>TODAY CHOICE</p>
       </div>
-      <div className="mt-1">
-        <table className="bgm-table w-[430px]">
+      <div className='mt-1'>
+        <table className='bgm-table w-[430px]'>
           <thead>
             <tr>
-              <th className="w-14 text-center">
-                <input type="checkbox" checked={allChecked} onChange={handleAllClick} />
-              </th>
-              <th className="w-6">번호</th>
-              <th className="w-60">곡명</th>
-              <th className="w-40">아티스트</th>
+              <th className='w-8 text-center'>재생</th>
+              <th className='w-6'>번호</th>
+              <th className='w-60'>곡명</th>
+              <th className='w-40'>아티스트</th>
             </tr>
           </thead>
           <tbody>
-            {MUSIC_DATA.map((music) => (
-              <tr key={music.id}>
-                <td className="text-center">
-                  <input type="checkbox" checked={checked.has(music.id)} onChange={() => handleClick(music.id)} />
+            {tracks.length === 0 && (
+              <tr>
+                <td colSpan={4} className='text-center !text-cy-text-muted py-2'>
+                  등록된 BGM이 없습니다
                 </td>
-                <td>{music.id}</td>
-                <td>{music.title}</td>
-                <td>{music.artist}</td>
               </tr>
-            ))}
+            )}
+            {tracks.map((track, i) => {
+              const isCurrent = i === currentIndex
+              return (
+                <tr
+                  key={track.id}
+                  onClick={() => handleRowClick(i)}
+                  className={`cursor-pointer ${isCurrent ? 'font-bold' : ''}`}
+                >
+                  <td className='text-center'>
+                    {isCurrent && isPlaying ? (
+                      <span className='bgm-eq'>
+                        <span />
+                        <span />
+                        <span />
+                      </span>
+                    ) : (
+                      <span className='text-cy-cyan'>▶</span>
+                    )}
+                  </td>
+                  <td>{i + 1}</td>
+                  <td className={isCurrent ? '!text-cy-cyan' : ''}>{track.title}</td>
+                  <td>{track.artist}</td>
+                </tr>
+              )
+            })}
           </tbody>
         </table>
       </div>

@@ -2,19 +2,26 @@ import { Outlet } from 'react-router-dom'
 import Sidebar from './Sidebar'
 import NavigationTabs from '../shared/NavigationTabs'
 import { useVisitStore } from '../../store/visitStore'
+import { useBgmStore } from '../../store/bgmStore'
+import { useRole } from '../../hooks/useRole'
 import { useEffect, useState, useCallback } from 'react'
 import type { TabItem } from '../../types'
 
-const TABS: TabItem[] = [
+const BASE_TABS: TabItem[] = [
   { to: '/', label: '홈' },
   { to: '/photo', label: '사진첩' },
   { to: '/diary', label: '다이어리' },
   { to: '/board', label: '게시판' },
+  { to: '/miniroom', label: '미니룸' },
 ]
 
 export default function MiniHompyLayout() {
   const { today, total, recordVisit } = useVisitStore()
+  const loadTracks = useBgmStore((state) => state.loadTracks)
+  const { isAdmin } = useRole()
   const [scale, setScale] = useState(1)
+
+  const tabs = isAdmin ? [...BASE_TABS, { to: '/admin', label: '관리' }] : BASE_TABS
 
   const updateScale = useCallback(() => {
     const frameW = 860
@@ -26,10 +33,11 @@ export default function MiniHompyLayout() {
 
   useEffect(() => {
     recordVisit()
+    loadTracks()
     updateScale()
     window.addEventListener('resize', updateScale)
     return () => window.removeEventListener('resize', updateScale)
-  }, [updateScale])
+  }, [updateScale, loadTracks])
 
   return (
     <div
@@ -37,7 +45,7 @@ export default function MiniHompyLayout() {
       style={{ transform: `scale(${scale})`, transformOrigin: 'center center' }}
     >
       <div className="cyframe-outer w-[808px] min-h-[544px] relative">
-        <NavigationTabs tabs={TABS} />
+        <NavigationTabs tabs={tabs} />
 
         <div className="cyframe-dashed">
           <div className="cyframe-inner">

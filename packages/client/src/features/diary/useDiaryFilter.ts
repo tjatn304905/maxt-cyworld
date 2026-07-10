@@ -1,9 +1,11 @@
 import { useMemo } from 'react'
 import { useFuzzySearch } from '../../hooks/useFuzzySearch'
-import type { DiaryEntry } from '../../types'
+import type { HistoryPost } from '../../types'
+
+export const DIARY_CATEGORIES = ['All', 'Event', 'Workshop', 'Meeting'] as const
 
 export function useDiaryFilter(
-  data: DiaryEntry[],
+  data: HistoryPost[],
   categoryFilter: string,
   query: string
 ) {
@@ -15,5 +17,5 @@ export function useDiaryFilter(
     [data, categoryFilter]
   )
 
-  return useFuzzySearch(filteredByCategory, ['title', 'content', 'author'], query)
+  return useFuzzySearch(filteredByCategory, ['title', 'content', 'author.nickname'], query)
 }

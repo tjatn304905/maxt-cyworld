@@ -1,7 +1,7 @@
 import { Search } from 'lucide-react'
 import CyInput from '../../components/ui/CyInput'
 import CyButton from '../../components/ui/CyButton'
-import { CATEGORIES } from './data'
+import { DIARY_CATEGORIES } from './useDiaryFilter'
 
 interface DiarySearchProps {
   query: string
@@ -12,18 +12,18 @@ interface DiarySearchProps {
 
 export default function DiarySearch({ query, onQueryChange, categoryFilter, onCategoryChange }: DiarySearchProps) {
   return (
-    <div className="w-full flex gap-1.5 mb-1.5 items-center">
+    <div className='w-full flex gap-1.5 mb-1.5 items-center'>
       <CyInput
         icon={<Search size={10} />}
-        placeholder="검색어를 입력하세요..."
+        placeholder='검색어를 입력하세요...'
         value={query}
         onChange={(e) => onQueryChange(e.target.value)}
       />
-      <div className="flex gap-0.5">
-        {CATEGORIES.map((cat) => (
+      <div className='flex gap-0.5'>
+        {DIARY_CATEGORIES.map((cat) => (
           <CyButton
             key={cat}
-            size="sm"
+            size='sm'
             variant={categoryFilter === cat ? 'active' : 'default'}
             onClick={() => onCategoryChange(cat)}
           >

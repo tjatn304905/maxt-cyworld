@@ -1,19 +1,31 @@
-import { useState, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import PageHeader from '../../components/ui/PageHeader'
+import CyButton from '../../components/ui/CyButton'
+import PostWriteModal from '../../components/shared/PostWriteModal'
 import DiarySearch from './DiarySearch'
 import DiaryDetail from './DiaryDetail'
 import DiaryCard from './DiaryCard'
-import { useDiaryFilter } from './useDiaryFilter'
-import { DIARY_DATA } from './data'
+import { useDiaryFilter, DIARY_CATEGORIES } from './useDiaryFilter'
+import { usePostStore } from '../../store/postStore'
+import { useRole } from '../../hooks/useRole'
 
 export default function DiaryPage() {
+  const list = usePostStore((state) => state.lists.DIARY)
+  const { fetchPosts } = usePostStore()
+  const { canWrite } = useRole()
+
   const [query, setQuery] = useState('')
   const [categoryFilter, setCategoryFilter] = useState('All')
   const [selectedId, setSelectedId] = useState<number | null>(null)
+  const [writing, setWriting] = useState(false)
   const listRef = useRef<HTMLDivElement>(null)
 
-  const results = useDiaryFilter(DIARY_DATA, categoryFilter, query)
-  const selectedDiary = selectedId ? DIARY_DATA.find((d) => d.id === selectedId) ?? null : null
+  useEffect(() => {
+    fetchPosts('DIARY', 1, 100)
+  }, [fetchPosts])
+
+  const results = useDiaryFilter(list.posts, categoryFilter, query)
+  const selectedDiary = selectedId ? list.posts.find((d) => d.id === selectedId) ?? null : null
 
   const handlePdfExport = async () => {
     if (!listRef.current) return
@@ -29,27 +41,32 @@ export default function DiaryPage() {
   }
 
   return (
-    <div className="flex flex-col items-center justify-center px-4 h-full overflow-hidden">
+    <div className='flex flex-col items-center justify-center px-4 h-full overflow-hidden'>
       <PageHeader
-        title="Diary"
-        subtitle="Today Story"
+        title='Diary'
+        subtitle='Today Story'
         action={{ label: 'PDF 내보내기', onClick: handlePdfExport }}
       />
 
-      <DiarySearch
-        query={query}
-        onQueryChange={setQuery}
-        categoryFilter={categoryFilter}
-        onCategoryChange={setCategoryFilter}
-      />
+      <div className='w-full flex items-center gap-1.5'>
+        <div className='flex-1'>
+          <DiarySearch
+            query={query}
+            onQueryChange={setQuery}
+            categoryFilter={categoryFilter}
+            onCategoryChange={setCategoryFilter}
+          />
+        </div>
+        {canWrite && (
+          <CyButton size='sm' className='mb-1.5' onClick={() => setWriting(true)}>
+            ✏️ 일기쓰기
+          </CyButton>
+        )}
+      </div>
 
-      {selectedDiary && (
-        <DiaryDetail diary={selectedDiary} onClose={() => setSelectedId(null)} />
-      )}
-
-      <div ref={listRef} className="h-full w-full overflow-y-scroll scrollbar-hide">
+      <div ref={listRef} className='h-full w-full overflow-y-scroll scrollbar-hide'>
         {results.length === 0 ? (
-          <div className="text-center py-8 text-cy-text-muted text-sm">
+          <div className='text-center py-8 text-cy-text-muted text-sm'>
             검색 결과가 없습니다
           </div>
         ) : (
@@ -62,6 +79,18 @@ export default function DiaryPage() {
           ))
         )}
       </div>
+
+      {selectedDiary && (
+        <DiaryDetail diary={selectedDiary} onClose={() => setSelectedId(null)} />
+      )}
+
+      {writing && (
+        <PostWriteModal
+          postType='DIARY'
+          categories={DIARY_CATEGORIES.filter((c) => c !== 'All')}
+          onClose={() => setWriting(false)}
+        />
+      )}
     </div>
   )
 }
