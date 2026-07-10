@@ -26,7 +26,6 @@ export type {
   BgmTrack,
   UploadResponse,
   GalleryImage,
-  TeamMember,
   Mood,
   TabItem,
 } from '@maxt/shared'

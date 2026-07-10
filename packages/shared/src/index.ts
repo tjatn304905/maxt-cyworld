@@ -51,11 +51,21 @@ export interface UpdateUserRoleRequest {
 }
 
 // ===== Avatar Types =====
-export type HeadType = 'default' | 'cat' | 'bear' | 'bunny' | 'crown'
-export type BodyType = 'default' | 'suit' | 'casual' | 'sporty' | 'hoodie'
-export type FaceType = 'default' | 'smile' | 'wink' | 'sleepy' | 'cool'
-export type BottomType = 'default' | 'jeans' | 'shorts' | 'skirt' | 'training'
-export type AccessoryType = 'none' | 'glasses' | 'hat' | 'scarf' | 'headphones'
+export type HeadType =
+  | 'default' | 'cat' | 'bear' | 'bunny' | 'crown'
+  | 'bob' | 'ponytail' | 'ribbon' | 'curly'
+export type BodyType =
+  | 'default' | 'suit' | 'casual' | 'sporty' | 'hoodie'
+  | 'shirt' | 'overalls' | 'stripe' | 'hanbok'
+export type FaceType =
+  | 'default' | 'smile' | 'wink' | 'sleepy' | 'cool'
+  | 'heart' | 'angry' | 'tears' | 'surprised'
+export type BottomType =
+  | 'default' | 'jeans' | 'shorts' | 'skirt' | 'training'
+  | 'checkskirt' | 'cargo' | 'hanbok' | 'slacks'
+export type AccessoryType =
+  | 'none' | 'glasses' | 'hat' | 'scarf' | 'headphones'
+  | 'sunglasses' | 'bowtie' | 'mask' | 'necklace'
 
 export interface AvatarConfig {
   size?: number
@@ -147,7 +157,8 @@ export interface Comment {
   postId: number
   parentId: number | null
   userId?: string
-  author: string | { name: string; nickname: string }
+  // avatarKeys: [hair, face, cloth, bottom, accessory] render_key 배열
+  author: string | { name: string; nickname: string; avatarKeys?: (string | null)[] }
   content: string
   date?: string
   createdAt?: string
@@ -185,15 +196,6 @@ export interface GalleryImage {
 }
 
 // ===== Legacy UI Types (client UI helpers) =====
-export interface TeamMember {
-  name: string
-  head: HeadType
-  body: BodyType
-  accessory: AccessoryType
-  x: number
-  y: number
-}
-
 export interface Mood {
   label: string
   value: string
