@@ -26,14 +26,14 @@ const PREVIEW_AVATAR = 80
 const TORSO_ACCESSORIES = ['scarf', 'bowtie', 'necklace']
 
 function previewOffsetY(category: ItemCategory, renderKey: string | null): number {
-  if (category === 'HAIR') return 14
-  if (category === 'FACE') return -6
-  if (category === 'CLOTHES') return -34
-  if (category === 'BOTTOM') return -36
+  if (category === 'HAIR') return 6
+  if (category === 'FACE') return -4
+  if (category === 'CLOTHES') return -26
+  if (category === 'BOTTOM') return -32
   const variant = renderKey?.split(':')[1] ?? ''
-  if (TORSO_ACCESSORIES.includes(variant)) return -30
-  if (variant === 'none') return -14
-  return 0
+  if (TORSO_ACCESSORIES.includes(variant)) return -24
+  if (variant === 'none') return -16
+  return -2
 }
 
 export default function AvatarCustomizer() {
