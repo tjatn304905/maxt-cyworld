@@ -19,6 +19,22 @@ const SLOT_KEYS: Record<ItemCategory, 'hairId' | 'faceId' | 'clothId' | 'bottomI
   ACCESSORY: 'accessoryId',
 }
 
+// item cells zoom into the body part the item affects (44px window, 80px avatar)
+const PREVIEW_WINDOW = 44
+const PREVIEW_AVATAR = 80
+const TORSO_ACCESSORIES = ['scarf', 'bowtie', 'necklace']
+
+function previewOffsetY(category: ItemCategory, renderKey: string | null): number {
+  if (category === 'HAIR') return 14
+  if (category === 'FACE') return -6
+  if (category === 'CLOTHES') return -34
+  if (category === 'BOTTOM') return -36
+  const variant = renderKey?.split(':')[1] ?? ''
+  if (TORSO_ACCESSORIES.includes(variant)) return -30
+  if (variant === 'none') return -14
+  return 0
+}
+
 export default function AvatarCustomizer() {
   const { items, draft, loadItems, setDraftItem } = useAvatarStore()
   const [activeTab, setActiveTab] = useState<ItemCategory>('HAIR')
@@ -69,11 +85,24 @@ export default function AvatarCustomizer() {
                 key={item.id}
                 type='button'
                 onClick={() => setDraftItem(activeTab, item.id)}
-                className={`flex flex-col items-center gap-0.5 p-1.5 rounded-md border-[1.5px] cursor-pointer bg-white transition-colors ${
+                className={`flex flex-col items-center gap-0.5 p-1 rounded-md border-[1.5px] cursor-pointer bg-white transition-colors ${
                   isSelected ? 'border-cy-cyan' : 'border-cy-border-light hover:border-cy-cyan'
                 }`}
               >
-                <PixelAvatar size={36} {...config} />
+                <span
+                  className='relative block overflow-hidden rounded-sm'
+                  style={{ width: PREVIEW_WINDOW, height: PREVIEW_WINDOW }}
+                >
+                  <span
+                    className='absolute'
+                    style={{
+                      left: (PREVIEW_WINDOW - PREVIEW_AVATAR) / 2,
+                      top: previewOffsetY(activeTab, item.renderKey),
+                    }}
+                  >
+                    <PixelAvatar size={PREVIEW_AVATAR} {...config} />
+                  </span>
+                </span>
                 <span className='text-[7px] text-cy-text-light'>{item.name}</span>
               </button>
             )
