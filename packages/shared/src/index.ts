@@ -1,10 +1,12 @@
 // ===== Auth Types =====
+export type UserRole = 'ADMIN' | 'WRITER' | 'USER'
+
 export interface User {
   id: string
   name: string
   email: string
   nickname: string
-  role: 'ADMIN' | 'USER'
+  role: UserRole
   createdAt: string
 }
 
@@ -13,11 +15,20 @@ export interface LoginRequest {
   password: string
 }
 
+export interface SignupAvatarSelection {
+  hairId?: number
+  faceId?: number
+  clothId?: number
+  bottomId?: number
+  accessoryId?: number
+}
+
 export interface SignupRequest {
   name: string
   email: string
   password: string
   nickname: string
+  avatar?: SignupAvatarSelection
 }
 
 export interface AuthResponse {
@@ -25,20 +36,38 @@ export interface AuthResponse {
   user: User
 }
 
+// ===== Admin Types =====
+export interface AdminUserSummary {
+  id: string
+  email: string
+  name: string
+  nickname: string
+  role: UserRole
+  createdAt: string
+}
+
+export interface UpdateUserRoleRequest {
+  role: 'WRITER' | 'USER'
+}
+
 // ===== Avatar Types =====
 export type HeadType = 'default' | 'cat' | 'bear' | 'bunny' | 'crown'
 export type BodyType = 'default' | 'suit' | 'casual' | 'sporty' | 'hoodie'
+export type FaceType = 'default' | 'smile' | 'wink' | 'sleepy' | 'cool'
+export type BottomType = 'default' | 'jeans' | 'shorts' | 'skirt' | 'training'
 export type AccessoryType = 'none' | 'glasses' | 'hat' | 'scarf' | 'headphones'
 
 export interface AvatarConfig {
   size?: number
   head?: HeadType
   body?: BodyType
+  face?: FaceType
+  bottom?: BottomType
   accessory?: AccessoryType
   color?: string
 }
 
-export type ItemCategory = 'HAIR' | 'FACE' | 'CLOTHES' | 'ACCESSORY'
+export type ItemCategory = 'HAIR' | 'FACE' | 'CLOTHES' | 'BOTTOM' | 'ACCESSORY'
 
 export interface AvatarItem {
   id: number
@@ -46,27 +75,38 @@ export interface AvatarItem {
   name: string
   imageUrl: string
   isDefault: boolean
+  renderKey: string | null
+}
+
+export interface EquippedItem {
+  id: number
+  name: string
+  imageUrl: string
+  renderKey: string | null
 }
 
 export interface UserAvatar {
-  hair: { id: number; name: string; imageUrl: string } | null
-  face: { id: number; name: string; imageUrl: string } | null
-  cloth: { id: number; name: string; imageUrl: string } | null
-  accessory: { id: number; name: string; imageUrl: string } | null
+  hair: EquippedItem | null
+  face: EquippedItem | null
+  cloth: EquippedItem | null
+  bottom: EquippedItem | null
+  accessory: EquippedItem | null
 }
 
-// ===== Data Types =====
-export interface DiaryEntry {
-  id: number
-  title: string
-  date: string
-  category: 'Event' | 'Workshop' | 'Meeting'
-  content: string
-  author: string
+export interface UpdateAvatarRequest {
+  hairId?: number
+  faceId?: number
+  clothId?: number
+  bottomId?: number
+  accessoryId?: number
 }
+
+// ===== Post Types =====
+export type PostType = 'DIARY' | 'PHOTO' | 'BOARD'
 
 export interface HistoryPost {
   id: number
+  postType: PostType
   category: string
   title: string
   content: string
@@ -86,16 +126,24 @@ export interface HistoryPost {
 export interface PostImage {
   id: number
   imageUrl: string
-  isRepresentative: boolean
+  sortOrder: number
 }
 
-export interface BoardPost {
-  id: number
+export interface CreatePostRequest {
+  postType?: PostType
+  category: string
   title: string
   content: string
-  author: string
-  date: string
-  likes: number
+  eventDate: string
+  images?: { imageUrl: string }[]
+}
+
+export interface UpdatePostRequest {
+  category?: string
+  title?: string
+  content?: string
+  eventDate?: string
+  images?: { imageUrl: string }[]
 }
 
 export interface Comment {
@@ -107,6 +155,47 @@ export interface Comment {
   content: string
   date?: string
   createdAt?: string
+  updatedAt?: string
+}
+
+// ===== BGM Types =====
+export interface BgmTrack {
+  id: number
+  title: string
+  artist: string
+  fileUrl: string
+  sortOrder: number
+}
+
+export interface CreateBgmTrackRequest {
+  title: string
+  artist: string
+  fileUrl: string
+  sortOrder?: number
+}
+
+// ===== Upload Types =====
+export interface UploadResponse {
+  url: string
+}
+
+// ===== Legacy UI Types (client mock/UI helpers) =====
+export interface DiaryEntry {
+  id: number
+  title: string
+  date: string
+  category: 'Event' | 'Workshop' | 'Meeting'
+  content: string
+  author: string
+}
+
+export interface BoardPost {
+  id: number
+  title: string
+  content: string
+  author: string
+  date: string
+  likes: number
 }
 
 export interface PhotoItem {
@@ -117,6 +206,7 @@ export interface PhotoItem {
   color: string
 }
 
+// legacy — superseded by BgmTrack (DB-backed)
 export interface MusicTrack {
   id: number
   title: string
