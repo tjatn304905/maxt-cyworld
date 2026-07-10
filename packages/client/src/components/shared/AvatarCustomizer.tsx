@@ -60,7 +60,7 @@ export default function AvatarCustomizer() {
           ))}
         </div>
 
-        <div className='grid grid-cols-3 gap-1.5'>
+        <div className='grid grid-cols-4 gap-1.5 max-h-52 overflow-y-auto scrollbar-hide pr-0.5'>
           {tabItems.map((item) => {
             const config = avatarConfigFromRenderKeys([item.renderKey])
             const isSelected = selectedId === item.id

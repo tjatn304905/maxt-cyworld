@@ -4,6 +4,7 @@ import type { Comment } from '../../types'
 import { usePostStore } from '../../store/postStore'
 import { useAuthStore } from '../../store/authStore'
 import { useRole } from '../../hooks/useRole'
+import PixelAvatar, { avatarConfigFromRenderKeys } from '../ui/PixelAvatar'
 
 interface CommentThreadProps {
   postId: number
@@ -12,6 +13,11 @@ interface CommentThreadProps {
 function authorName(comment: Comment): string {
   if (typeof comment.author === 'string') return comment.author
   return comment.author?.nickname || comment.author?.name || '알 수 없음'
+}
+
+function authorAvatarConfig(comment: Comment) {
+  if (typeof comment.author === 'string') return {}
+  return avatarConfigFromRenderKeys(comment.author?.avatarKeys ?? [])
 }
 
 function formatDate(value?: string): string {
@@ -90,7 +96,10 @@ export default function CommentThread({ postId }: CommentThreadProps) {
     }
 
     return (
-      <div key={comment.id} className={`cy-comment-row ${isReply ? 'cy-comment-reply' : ''}`}>
+      <div key={comment.id} className={`cy-comment-row !items-center ${isReply ? 'cy-comment-reply' : ''}`}>
+        <span className='shrink-0 bg-cy-pastel-blue rounded-sm border border-cy-border-light overflow-hidden'>
+          <PixelAvatar size={18} {...authorAvatarConfig(comment)} />
+        </span>
         <span className='cy-comment-author'>{authorName(comment)}</span>
         <span className='flex-1 text-cy-text'>{comment.content}</span>
         <span className='text-[7px] text-cy-text-muted whitespace-nowrap'>

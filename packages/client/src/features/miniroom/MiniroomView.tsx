@@ -1,7 +1,14 @@
-import PixelAvatar from '../../components/ui/PixelAvatar'
-import { TEAM } from './data'
+import PixelAvatar, { avatarConfigFromUserAvatar } from '../../components/ui/PixelAvatar'
+import { useAvatarStore } from '../../store/avatarStore'
+import { useAuthStore } from '../../store/authStore'
+
+const PHOTO_DOTS = ['#ffd700', '#99ccff', '#ff9999', '#99ff99', '#cc99ff']
 
 export default function MiniroomView() {
+  const user = useAuthStore((state) => state.user)
+  const equipped = useAvatarStore((state) => state.equipped)
+  const config = avatarConfigFromUserAvatar(equipped)
+
   return (
     <div className="miniroom-container h-[320px] relative">
       {/* Wall */}
@@ -19,11 +26,11 @@ export default function MiniroomView() {
           <div className="bg-cy-blue-light border border-cy-blue p-2 text-center">
             <div className="text-[11px] font-bold">📸 우리 팀 단체사진</div>
             <div className="flex justify-center gap-1 mt-1">
-              {TEAM.slice(0, 5).map((m) => (
+              {PHOTO_DOTS.map((color) => (
                 <div
-                  key={m.name}
+                  key={color}
                   className="w-4 h-4 rounded-full border border-white"
-                  style={{ backgroundColor: m.head === 'crown' ? '#ffd700' : '#99ccff' }}
+                  style={{ backgroundColor: color }}
                 />
               ))}
             </div>
@@ -65,30 +72,19 @@ export default function MiniroomView() {
         <div className="text-[24px]">🪴</div>
       </div>
 
-      {/* Team Members */}
-      {TEAM.map((member) => (
-        <div
-          key={member.name}
-          className="absolute flex flex-col items-center group"
-          style={{ left: `${member.x}%`, top: `${member.y}%`, transform: 'translate(-50%, -50%)' }}
-        >
-          <PixelAvatar
-            size={36}
-            head={member.head}
-            body={member.body}
-            accessory={member.accessory}
-          />
-          <div className="text-[9px] mt-0.5 bg-white/80 px-1 rounded text-center opacity-0 group-hover:opacity-100 transition-opacity">
-            {member.name}
-          </div>
-        </div>
-      ))}
-
       {/* Rug */}
       <div
         className="absolute bottom-[10%] left-1/2 -translate-x-1/2 w-[120px] h-[30px] rounded-full opacity-40"
         style={{ background: 'radial-gradient(ellipse, #ffccaa, #ffddbb)' }}
       />
+
+      {/* My Minimi (on the rug) */}
+      <div className="absolute left-1/2 bottom-[16%] -translate-x-1/2 flex flex-col items-center">
+        <PixelAvatar size={72} {...config} />
+        <div className="text-[9px] mt-1 bg-white/85 px-1.5 rounded text-center border border-cy-border-light">
+          {user?.nickname ?? '나'}
+        </div>
+      </div>
     </div>
   )
 }
