@@ -1,11 +1,12 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import PageHeader from '../../components/ui/PageHeader'
 import CyButton from '../../components/ui/CyButton'
+import BookExportModal from '../book/BookExportModal'
 import { usePostStore } from '../../store/postStore'
 import { useRole } from '../../hooks/useRole'
+import { BOARD_CATEGORIES } from './categories'
 
-export const BOARD_CATEGORIES = ['Event', 'Workshop', 'Meeting', 'Free', 'Notice'] as const
 const FILTERS = ['All', ...BOARD_CATEGORIES]
 
 function isToday(dateStr: string): boolean {
@@ -16,6 +17,7 @@ export default function BoardPage() {
   const { posts, total, page, limit, category, isLoading, error, fetchPosts } = usePostStore()
   const { canWrite } = useRole()
   const navigate = useNavigate()
+  const [exporting, setExporting] = useState(false)
 
   useEffect(() => {
     fetchPosts({ page: 1 })
@@ -36,7 +38,7 @@ export default function BoardPage() {
         action={canWrite ? { label: '✏️ 글쓰기', onClick: () => navigate('/board/write') } : undefined}
       />
 
-      <div className='flex gap-0.5 pb-1.5 flex-wrap'>
+      <div className='flex gap-0.5 pb-1.5 flex-wrap items-center'>
         {FILTERS.map((filter) => (
           <CyButton
             key={filter}
@@ -47,6 +49,8 @@ export default function BoardPage() {
             {filter === 'All' ? '전체' : filter}
           </CyButton>
         ))}
+        <span className='flex-1' />
+        <CyButton size='sm' onClick={() => setExporting(true)}>📖 역사서 만들기</CyButton>
       </div>
 
       {error && <p className='text-[8px] text-cy-tag-red px-1 pb-1'>{error}</p>}
@@ -86,6 +90,8 @@ export default function BoardPage() {
           ))}
         </tbody>
       </table>
+
+      {exporting && <BookExportModal onClose={() => setExporting(false)} />}
 
       {totalPages > 1 && (
         <div className='flex justify-center items-center gap-1 py-2'>

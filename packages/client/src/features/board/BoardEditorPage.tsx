@@ -8,7 +8,7 @@ import PageHeader from '../../components/ui/PageHeader'
 import CyButton from '../../components/ui/CyButton'
 import CyInput from '../../components/ui/CyInput'
 import RichTextEditor from '../../components/shared/RichTextEditor'
-import { BOARD_CATEGORIES } from './BoardPage'
+import { BOARD_CATEGORIES } from './categories'
 
 export default function BoardEditorPage() {
   const { id } = useParams()
