@@ -7,6 +7,9 @@ import postRoutes from './routes/posts.js'
 import commentRoutes from './routes/comments.js'
 import likeRoutes from './routes/likes.js'
 import avatarRoutes from './routes/avatars.js'
+import bgmRoutes from './routes/bgm.js'
+import adminRoutes from './routes/admin.js'
+import uploadRoutes from './routes/uploads.js'
 import { seed } from './db/seed.js'
 
 const app = express()
@@ -31,6 +34,9 @@ app.use('/api/posts', postRoutes)
 app.use('/api/posts', commentRoutes)
 app.use('/api/posts', likeRoutes)
 app.use('/api', avatarRoutes)
+app.use('/api/bgm', bgmRoutes)
+app.use('/api/admin', adminRoutes)
+app.use('/api/uploads', uploadRoutes)
 
 // Health check
 app.get('/api/health', (_req, res) => {
