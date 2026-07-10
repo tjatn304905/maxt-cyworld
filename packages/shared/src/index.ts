@@ -102,11 +102,8 @@ export interface UpdateAvatarRequest {
 }
 
 // ===== Post Types =====
-export type PostType = 'DIARY' | 'PHOTO' | 'BOARD'
-
 export interface HistoryPost {
   id: number
-  postType: PostType
   category: string
   title: string
   content: string
@@ -130,7 +127,6 @@ export interface PostImage {
 }
 
 export interface CreatePostRequest {
-  postType?: PostType
   category: string
   title: string
   content: string
@@ -179,40 +175,16 @@ export interface UploadResponse {
   url: string
 }
 
-// ===== Legacy UI Types (client mock/UI helpers) =====
-export interface DiaryEntry {
+// ===== Gallery Types (사진첩 = 게시글 이미지 모아보기) =====
+export interface GalleryImage {
   id: number
-  title: string
-  date: string
-  category: 'Event' | 'Workshop' | 'Meeting'
-  content: string
-  author: string
+  imageUrl: string
+  postId: number
+  postTitle: string
+  eventDate: string
 }
 
-export interface BoardPost {
-  id: number
-  title: string
-  content: string
-  author: string
-  date: string
-  likes: number
-}
-
-export interface PhotoItem {
-  id: number
-  title: string
-  date: string
-  description: string
-  color: string
-}
-
-// legacy — superseded by BgmTrack (DB-backed)
-export interface MusicTrack {
-  id: number
-  title: string
-  artist: string
-}
-
+// ===== Legacy UI Types (client UI helpers) =====
 export interface TeamMember {
   name: string
   head: HeadType

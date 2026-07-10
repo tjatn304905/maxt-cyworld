@@ -5,21 +5,15 @@ import { verifyAuth, requireRole, type AuthRequest } from '../middleware/auth.js
 
 const router = Router()
 
-const POST_TYPES = ['DIARY', 'PHOTO', 'BOARD']
-
-// GET /api/posts — list with pagination, type/category filter
+// GET /api/posts — list with pagination, category filter
 router.get('/', async (req, res) => {
-  const { type, category, page = '1', limit = '20' } = req.query as Record<string, string>
+  const { category, page = '1', limit = '20' } = req.query as Record<string, string>
   const pageSize = Math.min(100, Math.max(1, parseInt(limit)))
   const offset = (Math.max(1, parseInt(page)) - 1) * pageSize
 
   const conditions: string[] = []
   const params: any[] = []
 
-  if (type) {
-    params.push(type)
-    conditions.push(`hp.post_type = $${params.length}`)
-  }
   if (category) {
     params.push(category)
     conditions.push(`hp.category = $${params.length}`)
@@ -34,7 +28,7 @@ router.get('/', async (req, res) => {
 
   const dataParams = [...params, pageSize, offset]
   const { rows } = await pool.query(
-    `SELECT hp.id, hp.post_type, hp.category, hp.title, hp.content, hp.event_date,
+    `SELECT hp.id, hp.category, hp.title, hp.content, hp.event_date,
             hp.created_at, hp.updated_at,
             u.id AS author_id, u.name AS author_name, u.nickname AS author_nickname,
             pi.image_url AS representative_image,
@@ -70,7 +64,7 @@ router.get('/:id', async (req, res) => {
   const { id } = req.params
 
   const { rows } = await pool.query(
-    `SELECT hp.id, hp.post_type, hp.category, hp.title, hp.content, hp.event_date,
+    `SELECT hp.id, hp.category, hp.title, hp.content, hp.event_date,
             hp.created_at, hp.updated_at,
             u.id AS author_id, u.name AS author_name, u.nickname AS author_nickname,
             COALESCE(lc.like_count, 0)::int AS like_count,
@@ -109,15 +103,10 @@ router.get('/:id', async (req, res) => {
 // POST /api/posts — create (WRITER or ADMIN)
 router.post('/', verifyAuth, requireRole('WRITER'), async (req, res) => {
   const authReq = req as AuthRequest
-  const { postType = 'BOARD', category, title, content, eventDate, images } =
-    req.body as CreatePostRequest
+  const { category, title, content, eventDate, images } = req.body as CreatePostRequest
 
   if (!category || !title || !content || !eventDate) {
     res.status(400).json({ error: '필수 항목을 모두 입력해주세요.' })
-    return
-  }
-  if (!POST_TYPES.includes(postType)) {
-    res.status(400).json({ error: '유효하지 않은 게시판 유형입니다.' })
     return
   }
 
@@ -126,9 +115,9 @@ router.post('/', verifyAuth, requireRole('WRITER'), async (req, res) => {
     await client.query('BEGIN')
 
     const { rows } = await client.query(
-      `INSERT INTO history_posts (author_id, post_type, category, title, content, event_date)
-       VALUES ($1, $2, $3, $4, $5, $6) RETURNING id, created_at`,
-      [authReq.userId, postType, category, title, content, eventDate]
+      `INSERT INTO history_posts (author_id, category, title, content, event_date)
+       VALUES ($1, $2, $3, $4, $5) RETURNING id, created_at`,
+      [authReq.userId, category, title, content, eventDate]
     )
     const postId = rows[0].id
 
@@ -244,7 +233,6 @@ router.delete('/:id', verifyAuth, requireRole('WRITER'), async (req, res) => {
 function mapPostRow(row: any) {
   return {
     id: row.id,
-    postType: row.post_type,
     category: row.category,
     title: row.title,
     content: row.content,
