@@ -1,43 +1,84 @@
 import { create } from 'zustand'
+import type { BgmTrack } from '../types'
+import * as bgmService from '../services/bgm'
+
+// module-scope singleton so playback survives route changes
+const audio = new Audio()
 
 interface BgmState {
-  currentTrack: string
-  isPlaying: boolean
-  trackList: string[]
+  tracks: BgmTrack[]
   currentIndex: number
+  isPlaying: boolean
+  isLoaded: boolean
+  loadTracks: () => Promise<void>
+  playTrack: (index: number) => void
   togglePlay: () => void
   nextTrack: () => void
   prevTrack: () => void
 }
 
-export const useBgmStore = create<BgmState>((set) => ({
-  currentTrack: '♪ 나의 작은 팀 히스토리 - BGM Collection ♪',
-  isPlaying: true,
-  trackList: [
-    '♪ 나의 작은 팀 히스토리 - BGM Collection ♪',
-    '♫ 우리들의 추억 - Memory Lane ♫',
-    '♪ 함께한 시간들 - Together Forever ♪',
-  ],
-  currentIndex: 0,
+export const useBgmStore = create<BgmState>((set, get) => {
+  audio.addEventListener('ended', () => {
+    get().nextTrack()
+  })
+  audio.addEventListener('error', () => {
+    // missing/broken audio file — stop gracefully
+    set({ isPlaying: false })
+  })
 
-  togglePlay: () => set((state) => ({ isPlaying: !state.isPlaying })),
+  return {
+    tracks: [],
+    currentIndex: 0,
+    isPlaying: false,
+    isLoaded: false,
 
-  nextTrack: () =>
-    set((state) => {
-      const nextIndex = (state.currentIndex + 1) % state.trackList.length
-      return {
-        currentIndex: nextIndex,
-        currentTrack: state.trackList[nextIndex],
+    loadTracks: async () => {
+      if (get().isLoaded) return
+      try {
+        const tracks = await bgmService.getBgmTracks()
+        set({ tracks, isLoaded: true })
+      } catch {
+        // BGM is non-critical; keep the empty list
       }
-    }),
+    },
 
-  prevTrack: () =>
-    set((state) => {
-      const prevIndex =
-        (state.currentIndex - 1 + state.trackList.length) % state.trackList.length
-      return {
-        currentIndex: prevIndex,
-        currentTrack: state.trackList[prevIndex],
+    playTrack: (index) => {
+      const { tracks } = get()
+      if (tracks.length === 0) return
+      const safeIndex = ((index % tracks.length) + tracks.length) % tracks.length
+      audio.src = tracks[safeIndex].fileUrl
+      audio
+        .play()
+        .then(() => set({ currentIndex: safeIndex, isPlaying: true }))
+        .catch(() => set({ currentIndex: safeIndex, isPlaying: false }))
+    },
+
+    togglePlay: () => {
+      const { tracks, currentIndex, isPlaying } = get()
+      if (tracks.length === 0) return
+      if (isPlaying) {
+        audio.pause()
+        set({ isPlaying: false })
+        return
       }
-    }),
-}))
+      if (!audio.src) {
+        get().playTrack(currentIndex)
+        return
+      }
+      audio
+        .play()
+        .then(() => set({ isPlaying: true }))
+        .catch(() => set({ isPlaying: false }))
+    },
+
+    nextTrack: () => {
+      const { currentIndex } = get()
+      get().playTrack(currentIndex + 1)
+    },
+
+    prevTrack: () => {
+      const { currentIndex } = get()
+      get().playTrack(currentIndex - 1)
+    },
+  }
+})

@@ -38,6 +38,11 @@
   --color-cy-text-muted: #999999;
   --color-cy-btn-bg: #D9D9D9;
 
+  --color-cy-pastel-pink: #FFE4EC;
+  --color-cy-pastel-blue: #E4F1FF;
+  --color-cy-pastel-yellow: #FFF7DC;
+  --color-cy-pastel-green: #E8F8E8;
+
   --font-pretendard: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
   --font-neo: 'NeoDunggeunmo', 'Courier New', monospace;
   --font-score: 'S-CoreDream', sans-serif;
@@ -410,7 +415,7 @@ a {
 }
 
 .login-input:focus {
-  border-color: #ff6000;
+  border-color: var(--color-cy-cyan);
   background: #fff;
 }
 
@@ -462,3 +467,248 @@ a {
 .category-event { background-color: #ffcccc; border-color: #ff9999; }
 .category-workshop { background-color: #ccffcc; border-color: #99cc99; }
 .category-meeting { background-color: #cce5ff; border-color: #99ccff; }
+.category-free { background-color: var(--color-cy-pastel-yellow); border-color: #e5d9a0; }
+.category-photo { background-color: var(--color-cy-pastel-pink); border-color: #f0b8c8; }
+
+/* ===== Content Panel (pastel box) ===== */
+.cy-panel {
+  background-color: var(--color-cy-pastel-blue);
+  border: 1px solid var(--color-cy-border-light);
+  border-radius: 6px;
+  padding: 8px;
+}
+
+/* ===== Post Table (mini board list) ===== */
+.cy-post-table {
+  width: 100%;
+  font-size: 9px;
+  font-family: var(--font-pretendard);
+  border-collapse: collapse;
+  color: var(--color-cy-text-light);
+}
+
+.cy-post-table thead tr {
+  background-color: var(--color-cy-inner-bg);
+  border-top: 1px solid var(--color-cy-border);
+  border-bottom: 1px solid var(--color-cy-border);
+}
+
+.cy-post-table th {
+  padding: 3px 6px;
+  text-align: center;
+  font-weight: 600;
+  color: var(--color-cy-text);
+}
+
+.cy-post-table td {
+  padding: 4px 6px;
+  text-align: center;
+}
+
+.cy-post-table tbody tr {
+  border-bottom: 1.5px dotted var(--color-cy-border);
+  cursor: pointer;
+}
+
+.cy-post-table tbody tr:hover .cy-post-title {
+  color: var(--color-cy-cyan);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.cy-post-title {
+  text-align: left;
+  color: var(--color-cy-text);
+  font-weight: 500;
+}
+
+/* today's new post badge */
+.cy-badge-new {
+  display: inline-block;
+  font-family: var(--font-neo);
+  font-size: 7px;
+  background-color: var(--color-cy-tag-red);
+  color: white;
+  padding: 0 2px;
+  border-radius: 2px;
+  margin-left: 3px;
+  line-height: 1.5;
+}
+
+/* ===== Comment Rows (일촌평 style) ===== */
+.cy-comment-row {
+  display: flex;
+  align-items: baseline;
+  gap: 5px;
+  padding: 3px 2px;
+  border-bottom: 1.5px dotted var(--color-cy-border-light);
+  font-size: 9px;
+}
+
+.cy-comment-author {
+  color: var(--color-cy-cyan-dark);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.cy-comment-reply {
+  padding-left: 14px;
+}
+
+.cy-comment-reply::before {
+  content: '└';
+  color: var(--color-cy-text-muted);
+  margin-right: 3px;
+}
+
+/* ===== Write Panel ===== */
+.cy-write-panel {
+  background-color: var(--color-cy-pastel-yellow);
+  border: 1.5px dashed var(--color-cy-border);
+  border-radius: 6px;
+  padding: 10px;
+}
+
+/* ===== Retro Widget Title ===== */
+.cy-widget-title {
+  font-family: var(--font-neo);
+  font-size: 10px;
+  color: var(--color-cy-cyan);
+  letter-spacing: 0.5px;
+}
+
+/* ===== Photo Frame (polaroid) ===== */
+.cy-photo-frame {
+  background: white;
+  border: 1px solid var(--color-cy-border-light);
+  border-radius: 3px;
+  padding: 6px 6px 4px 6px;
+  box-shadow: 1px 2px 4px rgba(0, 0, 0, 0.12);
+  transform: rotate(-1.2deg);
+  transition: transform 0.15s, box-shadow 0.15s;
+  cursor: pointer;
+}
+
+.cy-photo-frame:nth-child(even) {
+  transform: rotate(1.2deg);
+}
+
+.cy-photo-frame:hover {
+  transform: rotate(0deg) scale(1.02);
+  box-shadow: 2px 3px 8px rgba(0, 0, 0, 0.2);
+}
+
+/* ===== BGM Mini Player ===== */
+.bgm-player {
+  border-top: 1.5px dotted var(--color-cy-border);
+  padding: 5px 6px 3px 6px;
+  font-family: var(--font-neo);
+  font-size: 8px;
+  color: var(--color-cy-cyan-text);
+}
+
+.bgm-player-track {
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.bgm-player-track > span {
+  display: inline-block;
+  padding-left: 100%;
+  animation: bgmMarquee 8s linear infinite;
+}
+
+@keyframes bgmMarquee {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-100%); }
+}
+
+/* equalizer bars shown on the playing track */
+.bgm-eq {
+  display: inline-flex;
+  align-items: flex-end;
+  gap: 1px;
+  height: 8px;
+}
+
+.bgm-eq span {
+  width: 2px;
+  background-color: var(--color-cy-cyan);
+  animation: bgmEq 0.7s ease-in-out infinite;
+}
+
+.bgm-eq span:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.bgm-eq span:nth-child(3) {
+  animation-delay: 0.4s;
+}
+
+@keyframes bgmEq {
+  0%, 100% { height: 3px; }
+  50% { height: 8px; }
+}
+
+/* ===== Modal (CyModal) ===== */
+.cy-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 50;
+}
+
+.cy-modal {
+  background: white;
+  border: 1.5px solid var(--color-cy-border);
+  border-radius: 6px;
+  width: min(92vw, 420px);
+  max-height: 86vh;
+  overflow-y: auto;
+}
+
+.cy-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background-color: var(--color-cy-cyan);
+  color: white;
+  font-family: var(--font-neo);
+  font-size: 10px;
+  padding: 4px 8px;
+}
+
+/* ===== Retro Login / Signup ===== */
+.retro-login-bg {
+  min-height: 100vh;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem 1.5rem;
+  background-color: var(--color-cy-pastel-blue);
+  background-image:
+    repeating-linear-gradient(0deg, transparent, transparent 15px, rgba(85, 178, 212, 0.15) 15px, rgba(85, 178, 212, 0.15) 16px),
+    repeating-linear-gradient(90deg, transparent, transparent 15px, rgba(85, 178, 212, 0.15) 15px, rgba(85, 178, 212, 0.15) 16px);
+  background-size: 16px 16px;
+  font-family: var(--font-pretendard);
+}
+
+.retro-login-title {
+  font-family: var(--font-neo);
+  font-size: 26px;
+  color: var(--color-cy-cyan-dark);
+  letter-spacing: 2px;
+  text-shadow: 2px 2px 0 white;
+}
+
+.retro-login-card {
+  background: white;
+  border: 1.5px solid var(--color-cy-border);
+  border-radius: 10px;
+  box-shadow: 3px 4px 0 rgba(41, 142, 181, 0.25);
+}

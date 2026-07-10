@@ -1,52 +1,99 @@
 import { create } from 'zustand'
-import type { HeadType, BodyType, AccessoryType } from '../types'
+import type { AvatarItem, ItemCategory, UserAvatar, UpdateAvatarRequest } from '../types'
+import * as avatarService from '../services/avatar'
 
-const HEADS: HeadType[] = ['default', 'cat', 'bear', 'bunny', 'crown']
-const BODIES: BodyType[] = ['default', 'suit', 'casual', 'sporty', 'hoodie']
-const ACCESSORIES: AccessoryType[] = ['none', 'glasses', 'hat', 'scarf', 'headphones']
+export type AvatarDraft = UpdateAvatarRequest
 
-interface AvatarState {
-  head: HeadType
-  body: BodyType
-  accessory: AccessoryType
-  heads: HeadType[]
-  bodies: BodyType[]
-  accessories: AccessoryType[]
-  setHead: (head: HeadType) => void
-  setBody: (body: BodyType) => void
-  setAccessory: (accessory: AccessoryType) => void
-  cycleHead: () => void
-  cycleBody: () => void
-  cycleAccessory: () => void
+const SLOT_BY_CATEGORY: Record<ItemCategory, keyof AvatarDraft> = {
+  HAIR: 'hairId',
+  FACE: 'faceId',
+  CLOTHES: 'clothId',
+  BOTTOM: 'bottomId',
+  ACCESSORY: 'accessoryId',
 }
 
-export const useAvatarStore = create<AvatarState>((set) => ({
-  head: 'default',
-  body: 'default',
-  accessory: 'none',
-  heads: HEADS,
-  bodies: BODIES,
-  accessories: ACCESSORIES,
+interface AvatarState {
+  items: AvatarItem[]
+  equipped: UserAvatar | null
+  draft: AvatarDraft
+  isLoading: boolean
+  error: string | null
+  loadItems: () => Promise<void>
+  loadMyAvatar: () => Promise<void>
+  setDraftItem: (category: ItemCategory, itemId: number) => void
+  resetDraftFromEquipped: () => void
+  saveDraft: () => Promise<void>
+}
 
-  setHead: (head) => set({ head }),
-  setBody: (body) => set({ body }),
-  setAccessory: (accessory) => set({ accessory }),
+export const useAvatarStore = create<AvatarState>((set, get) => ({
+  items: [],
+  equipped: null,
+  draft: {},
+  isLoading: false,
+  error: null,
 
-  cycleHead: () =>
-    set((state) => {
-      const idx = HEADS.indexOf(state.head)
-      return { head: HEADS[(idx + 1) % HEADS.length] }
-    }),
+  loadItems: async () => {
+    if (get().items.length > 0) return
+    set({ isLoading: true, error: null })
+    try {
+      const items = await avatarService.getAvatarItems()
+      set({ items, isLoading: false })
 
-  cycleBody: () =>
-    set((state) => {
-      const idx = BODIES.indexOf(state.body)
-      return { body: BODIES[(idx + 1) % BODIES.length] }
-    }),
+      // start the draft from default items so the preview is never empty
+      if (Object.keys(get().draft).length === 0) {
+        const draft: AvatarDraft = {}
+        for (const item of items) {
+          if (item.isDefault) {
+            draft[SLOT_BY_CATEGORY[item.category]] = item.id
+          }
+        }
+        set({ draft })
+      }
+    } catch (err: any) {
+      const message = err.response?.data?.error || '아바타 아이템을 불러오지 못했습니다.'
+      set({ error: message, isLoading: false })
+    }
+  },
 
-  cycleAccessory: () =>
-    set((state) => {
-      const idx = ACCESSORIES.indexOf(state.accessory)
-      return { accessory: ACCESSORIES[(idx + 1) % ACCESSORIES.length] }
-    }),
+  loadMyAvatar: async () => {
+    try {
+      const equipped = await avatarService.getMyAvatar()
+      set({ equipped })
+      get().resetDraftFromEquipped()
+    } catch (err: any) {
+      const message = err.response?.data?.error || '아바타 정보를 불러오지 못했습니다.'
+      set({ error: message })
+    }
+  },
+
+  setDraftItem: (category, itemId) => {
+    set((state) => ({ draft: { ...state.draft, [SLOT_BY_CATEGORY[category]]: itemId } }))
+  },
+
+  resetDraftFromEquipped: () => {
+    const { equipped } = get()
+    if (!equipped) return
+    set({
+      draft: {
+        hairId: equipped.hair?.id,
+        faceId: equipped.face?.id,
+        clothId: equipped.cloth?.id,
+        bottomId: equipped.bottom?.id,
+        accessoryId: equipped.accessory?.id,
+      },
+    })
+  },
+
+  saveDraft: async () => {
+    set({ isLoading: true, error: null })
+    try {
+      await avatarService.updateMyAvatar(get().draft)
+      const equipped = await avatarService.getMyAvatar()
+      set({ equipped, isLoading: false })
+    } catch (err: any) {
+      const message = err.response?.data?.error || '아바타 저장에 실패했습니다.'
+      set({ error: message, isLoading: false })
+      throw err
+    }
+  },
 }))
