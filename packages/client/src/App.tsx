@@ -5,9 +5,10 @@ import RequireAdmin from './features/auth/RequireAdmin'
 import LoginPage from './features/auth/LoginPage'
 import SignupPage from './features/auth/SignupPage'
 import HomePage from './features/home/HomePage'
-import DiaryPage from './features/diary/DiaryPage'
 import PhotoPage from './features/photo/PhotoPage'
 import BoardPage from './features/board/BoardPage'
+import BoardDetailPage from './features/board/BoardDetailPage'
+import BoardEditorPage from './features/board/BoardEditorPage'
 import MiniroomPage from './features/miniroom/MiniroomPage'
 import AdminPage from './features/admin/AdminPage'
 
@@ -23,9 +24,11 @@ export default function App() {
         <Route element={<ProtectedRoute />}>
           <Route element={<MiniHompyLayout />}>
             <Route index element={<HomePage />} />
-            <Route path="diary" element={<DiaryPage />} />
             <Route path="photo" element={<PhotoPage />} />
             <Route path="board" element={<BoardPage />} />
+            <Route path="board/write" element={<BoardEditorPage />} />
+            <Route path="board/:id" element={<BoardDetailPage />} />
+            <Route path="board/:id/edit" element={<BoardEditorPage />} />
             <Route path="miniroom" element={<MiniroomPage />} />
             <Route element={<RequireAdmin />}>
               <Route path="admin" element={<AdminPage />} />

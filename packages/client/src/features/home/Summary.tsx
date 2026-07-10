@@ -1,26 +1,26 @@
+import { useEffect, useState } from 'react'
 import { usePostStore } from '../../store/postStore'
+import { getImages } from '../../services/images'
 
 export default function Summary() {
-  const lists = usePostStore((state) => state.lists)
+  const total = usePostStore((state) => state.total)
+  const [photoCount, setPhotoCount] = useState(0)
+
+  useEffect(() => {
+    getImages({ page: 1, limit: 1 })
+      .then((res) => setPhotoCount(res.total))
+      .catch(() => setPhotoCount(0))
+  }, [])
 
   return (
     <div className="mt-5">
       <hr className="summary-divider" />
       <div className="flex summary-stat py-1 justify-between">
         <div className="w-6/12">
-          다이어리 <span className="summary-stat-value">{lists.DIARY.total}</span>
+          게시글 <span className="summary-stat-value">{total}</span>
         </div>
         <div className="w-6/12">
-          사진첩 <span className="summary-stat-value">{lists.PHOTO.total}</span>
-        </div>
-      </div>
-      <hr className="summary-divider" />
-      <div className="flex summary-stat py-1 justify-between">
-        <div className="w-6/12">
-          게시판 <span className="summary-stat-value">{lists.BOARD.total}</span>
-        </div>
-        <div className="w-6/12">
-          방명록 <span className="summary-stat-value">0</span>
+          사진 <span className="summary-stat-value">{photoCount}</span>
         </div>
       </div>
       <hr className="summary-divider" />

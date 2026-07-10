@@ -1,43 +1,53 @@
-import { Fragment, useState } from 'react'
+import { useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import PageHeader from '../../components/ui/PageHeader'
 import CyButton from '../../components/ui/CyButton'
-import PostWriteModal from '../../components/shared/PostWriteModal'
-import BoardPost from './BoardPost'
-import { useBoard } from './useBoard'
+import { usePostStore } from '../../store/postStore'
 import { useRole } from '../../hooks/useRole'
 
-const BOARD_CATEGORIES = ['Free', 'Notice']
+export const BOARD_CATEGORIES = ['Event', 'Workshop', 'Meeting', 'Free', 'Notice'] as const
+const FILTERS = ['All', ...BOARD_CATEGORIES]
 
 function isToday(dateStr: string): boolean {
   return dateStr?.slice(0, 10) === new Date().toISOString().slice(0, 10)
 }
 
 export default function BoardPage() {
-  const {
-    posts,
-    total,
-    page,
-    limit,
-    isLoading,
-    error,
-    expandedPost,
-    animatingHearts,
-    handleLike,
-    toggleExpand,
-    goToPage,
-  } = useBoard()
+  const { posts, total, page, limit, category, isLoading, error, fetchPosts } = usePostStore()
   const { canWrite } = useRole()
-  const [writing, setWriting] = useState(false)
+  const navigate = useNavigate()
+
+  useEffect(() => {
+    fetchPosts({ page: 1 })
+  }, [fetchPosts])
 
   const totalPages = Math.max(1, Math.ceil(total / limit))
+  const activeFilter = category ?? 'All'
+
+  const handleFilter = (filter: string) => {
+    fetchPosts({ page: 1, category: filter === 'All' ? null : filter })
+  }
 
   return (
     <div className='flex flex-col px-4 h-full overflow-y-auto scrollbar-hide'>
       <PageHeader
         title='Board'
-        subtitle='Community'
-        action={canWrite ? { label: '✏️ 글쓰기', onClick: () => setWriting(true) } : undefined}
+        subtitle='Team History'
+        action={canWrite ? { label: '✏️ 글쓰기', onClick: () => navigate('/board/write') } : undefined}
       />
+
+      <div className='flex gap-0.5 pb-1.5 flex-wrap'>
+        {FILTERS.map((filter) => (
+          <CyButton
+            key={filter}
+            size='sm'
+            variant={activeFilter === filter ? 'active' : 'default'}
+            onClick={() => handleFilter(filter)}
+          >
+            {filter === 'All' ? '전체' : filter}
+          </CyButton>
+        ))}
+      </div>
 
       {error && <p className='text-[8px] text-cy-tag-red px-1 pb-1'>{error}</p>}
 
@@ -46,6 +56,7 @@ export default function BoardPage() {
           <tr>
             <th className='w-7'>번호</th>
             <th>제목</th>
+            <th className='w-16'>카테고리</th>
             <th className='w-14'>작성자</th>
             <th className='w-16'>날짜</th>
             <th className='w-8'>♥</th>
@@ -54,63 +65,43 @@ export default function BoardPage() {
         <tbody>
           {posts.length === 0 && !isLoading && (
             <tr>
-              <td colSpan={5} className='!py-4 text-cy-text-muted'>아직 게시물이 없습니다.</td>
+              <td colSpan={6} className='!py-4 text-cy-text-muted'>아직 게시물이 없습니다.</td>
             </tr>
           )}
           {posts.map((post, idx) => (
-            <Fragment key={post.id}>
-              <tr onClick={() => toggleExpand(post.id)}>
-                <td className='text-cy-text-muted'>{total - ((page - 1) * limit + idx)}</td>
-                <td className='cy-post-title'>
-                  {post.title}
-                  {post.commentCount > 0 && (
-                    <span className='text-cy-cyan-dark ml-1'>[{post.commentCount}]</span>
-                  )}
-                  {isToday(post.createdAt) && <span className='cy-badge-new'>N</span>}
-                </td>
-                <td>{post.author?.nickname ?? '알 수 없음'}</td>
-                <td className='text-cy-text-muted'>{post.eventDate?.slice(0, 10)}</td>
-                <td>{post.likeCount}</td>
-              </tr>
-              {expandedPost === post.id && (
-                <tr className='!cursor-default'>
-                  <td colSpan={5} className='!p-1.5 !text-left'>
-                    <BoardPost
-                      post={post}
-                      isAnimating={animatingHearts.has(post.id)}
-                      onLike={handleLike}
-                    />
-                  </td>
-                </tr>
-              )}
-            </Fragment>
+            <tr key={post.id} onClick={() => navigate(`/board/${post.id}`)}>
+              <td className='text-cy-text-muted'>{total - ((page - 1) * limit + idx)}</td>
+              <td className='cy-post-title'>
+                {post.title}
+                {post.commentCount > 0 && (
+                  <span className='text-cy-cyan-dark ml-1'>[{post.commentCount}]</span>
+                )}
+                {isToday(post.createdAt) && <span className='cy-badge-new'>N</span>}
+              </td>
+              <td className='text-cy-text-muted'>{post.category}</td>
+              <td>{post.author?.nickname ?? '알 수 없음'}</td>
+              <td className='text-cy-text-muted'>{post.eventDate?.slice(0, 10)}</td>
+              <td>{post.likeCount}</td>
+            </tr>
           ))}
         </tbody>
       </table>
 
       {totalPages > 1 && (
         <div className='flex justify-center items-center gap-1 py-2'>
-          <CyButton size='sm' disabled={page <= 1} onClick={() => goToPage(page - 1)}>◀</CyButton>
+          <CyButton size='sm' disabled={page <= 1} onClick={() => fetchPosts({ page: page - 1 })}>◀</CyButton>
           {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
             <CyButton
               key={p}
               size='sm'
               variant={p === page ? 'active' : 'default'}
-              onClick={() => goToPage(p)}
+              onClick={() => fetchPosts({ page: p })}
             >
               {p}
             </CyButton>
           ))}
-          <CyButton size='sm' disabled={page >= totalPages} onClick={() => goToPage(page + 1)}>▶</CyButton>
+          <CyButton size='sm' disabled={page >= totalPages} onClick={() => fetchPosts({ page: page + 1 })}>▶</CyButton>
         </div>
-      )}
-
-      {writing && (
-        <PostWriteModal
-          postType='BOARD'
-          categories={BOARD_CATEGORIES}
-          onClose={() => setWriting(false)}
-        />
       )}
     </div>
   )

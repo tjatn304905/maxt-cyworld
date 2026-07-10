@@ -9,9 +9,8 @@ import type { TabItem } from '../../types'
 
 const BASE_TABS: TabItem[] = [
   { to: '/', label: '홈' },
-  { to: '/photo', label: '사진첩' },
-  { to: '/diary', label: '다이어리' },
   { to: '/board', label: '게시판' },
+  { to: '/photo', label: '사진첩' },
   { to: '/miniroom', label: '미니룸' },
 ]
 

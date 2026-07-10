@@ -1,6 +1,7 @@
 import { useEffect } from 'react'
 import { useBgmStore } from '../../store/bgmStore'
 
+// 축소형 BGM 위젯 (사이드바 미니 플레이어의 홈 버전)
 export default function MusicBoard() {
   const { tracks, currentIndex, isPlaying, loadTracks, playTrack, togglePlay } = useBgmStore()
 
@@ -17,56 +18,35 @@ export default function MusicBoard() {
   }
 
   return (
-    <div>
-      <div className='flex items-end mt-3'>
-        <div className='font-black text-xs text-cy-cyan mr-3'>추억의 BGM</div>
-        <p className='cy-widget-title mb-[1px]'>TODAY CHOICE</p>
-      </div>
-      <div className='mt-1'>
-        <table className='bgm-table w-[430px]'>
-          <thead>
-            <tr>
-              <th className='w-8 text-center'>재생</th>
-              <th className='w-6'>번호</th>
-              <th className='w-60'>곡명</th>
-              <th className='w-40'>아티스트</th>
-            </tr>
-          </thead>
-          <tbody>
-            {tracks.length === 0 && (
-              <tr>
-                <td colSpan={4} className='text-center !text-cy-text-muted py-2'>
-                  등록된 BGM이 없습니다
-                </td>
-              </tr>
-            )}
-            {tracks.map((track, i) => {
-              const isCurrent = i === currentIndex
-              return (
-                <tr
-                  key={track.id}
-                  onClick={() => handleRowClick(i)}
-                  className={`cursor-pointer ${isCurrent ? 'font-bold' : ''}`}
-                >
-                  <td className='text-center'>
-                    {isCurrent && isPlaying ? (
-                      <span className='bgm-eq'>
-                        <span />
-                        <span />
-                        <span />
-                      </span>
-                    ) : (
-                      <span className='text-cy-cyan'>▶</span>
-                    )}
-                  </td>
-                  <td>{i + 1}</td>
-                  <td className={isCurrent ? '!text-cy-cyan' : ''}>{track.title}</td>
-                  <td>{track.artist}</td>
-                </tr>
-              )
-            })}
-          </tbody>
-        </table>
+    <div className='cy-panel w-[190px] shrink-0'>
+      <p className='cy-widget-title'>♪ 추억의 BGM</p>
+      <div className='flex flex-col mt-1'>
+        {tracks.length === 0 && (
+          <p className='text-[8px] text-cy-text-muted'>등록된 BGM이 없습니다</p>
+        )}
+        {tracks.map((track, i) => {
+          const isCurrent = i === currentIndex
+          return (
+            <button
+              key={track.id}
+              onClick={() => handleRowClick(i)}
+              className={`flex items-center gap-1 py-0.5 text-left cursor-pointer text-[8px] ${
+                isCurrent ? 'text-cy-cyan font-bold' : 'text-cy-text-light'
+              }`}
+            >
+              {isCurrent && isPlaying ? (
+                <span className='bgm-eq shrink-0'>
+                  <span />
+                  <span />
+                  <span />
+                </span>
+              ) : (
+                <span className='text-cy-cyan shrink-0'>▶</span>
+              )}
+              <span className='truncate'>{track.title} - {track.artist}</span>
+            </button>
+          )
+        })}
       </div>
     </div>
   )

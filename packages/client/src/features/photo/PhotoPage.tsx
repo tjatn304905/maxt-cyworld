@@ -1,73 +1,45 @@
 import { useEffect, useState } from 'react'
 import PageHeader from '../../components/ui/PageHeader'
-import PostWriteModal from '../../components/shared/PostWriteModal'
 import PhotoCard from './PhotoCard'
 import Lightbox from './Lightbox'
-import { usePostStore } from '../../store/postStore'
-import { useRole } from '../../hooks/useRole'
+import type { GalleryImage } from '../../types'
+import { getImages } from '../../services/images'
 
-const FALLBACK_COLORS = ['#ffcccc', '#cce5ff', '#ccffcc', '#ffddaa', '#99ffcc', '#ffccff']
-const FALLBACK_EMOJIS = ['📸', '🎉', '🏖️', '🏆', '⛺', '🎄']
-
+// 사진첩 = 게시글에 첨부된 모든 사진 모아보기
 export default function PhotoPage() {
-  const list = usePostStore((state) => state.lists.PHOTO)
-  const { fetchPosts } = usePostStore()
-  const { canWrite } = useRole()
-
-  const [selected, setSelected] = useState<number | null>(null)
-  const [writing, setWriting] = useState(false)
+  const [images, setImages] = useState<GalleryImage[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [selected, setSelected] = useState<GalleryImage | null>(null)
 
   useEffect(() => {
-    fetchPosts('PHOTO', 1, 60)
-  }, [fetchPosts])
-
-  const selectedIdx = selected !== null ? list.posts.findIndex((p) => p.id === selected) : -1
-  const selectedPhoto = selectedIdx >= 0 ? list.posts[selectedIdx] : null
+    getImages({ page: 1, limit: 60 })
+      .then((res) => setImages(res.data))
+      .catch((err: any) => setError(err.response?.data?.error || '사진을 불러오지 못했습니다.'))
+      .finally(() => setIsLoading(false))
+  }, [])
 
   return (
     <div className='flex flex-col items-center px-4 h-full overflow-hidden'>
-      <PageHeader
-        title='Photo'
-        subtitle='Album'
-        action={canWrite ? { label: '📷 사진올리기', onClick: () => setWriting(true) } : undefined}
-      />
+      <PageHeader title='Photo' subtitle='Album' />
 
       <div className='w-full h-full overflow-y-auto scrollbar-hide'>
-        {list.posts.length === 0 ? (
-          <div className='text-center py-8 text-cy-text-muted text-sm'>아직 사진이 없습니다</div>
+        {error && <p className='text-[8px] text-cy-tag-red text-center py-2'>{error}</p>}
+        {!isLoading && !error && images.length === 0 ? (
+          <div className='text-center py-8 text-cy-text-muted text-sm'>
+            아직 사진이 없습니다
+            <p className='text-[8px] mt-1'>게시글에 사진을 첨부하면 이곳에 모아져요 📸</p>
+          </div>
         ) : (
           <div className='grid grid-cols-3 gap-3 p-1'>
-            {list.posts.map((photo, i) => (
-              <PhotoCard
-                key={photo.id}
-                photo={photo}
-                index={i}
-                onSelect={() => setSelected(photo.id === selected ? null : photo.id)}
-              />
+            {images.map((image) => (
+              <PhotoCard key={image.id} image={image} onSelect={() => setSelected(image)} />
             ))}
           </div>
         )}
       </div>
 
-      {selectedPhoto && (
-        <Lightbox
-          photo={selectedPhoto}
-          fallback={{
-            color: FALLBACK_COLORS[selectedIdx % FALLBACK_COLORS.length],
-            emoji: FALLBACK_EMOJIS[selectedIdx % FALLBACK_EMOJIS.length],
-          }}
-          onClose={() => setSelected(null)}
-        />
-      )}
-
-      {writing && (
-        <PostWriteModal
-          postType='PHOTO'
-          categories={['Photo']}
-          requireImage
-          onClose={() => setWriting(false)}
-        />
-      )}
+      {selected && <Lightbox image={selected} onClose={() => setSelected(null)} />}
     </div>
   )
 }
