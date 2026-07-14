@@ -4,6 +4,7 @@ import ProtectedRoute from './features/auth/ProtectedRoute'
 import RequireAdmin from './features/auth/RequireAdmin'
 import LoginPage from './features/auth/LoginPage'
 import SignupPage from './features/auth/SignupPage'
+import FindAccountPage from './features/auth/FindAccountPage'
 import HomePage from './features/home/HomePage'
 import PhotoPage from './features/photo/PhotoPage'
 import BoardPage from './features/board/BoardPage'
@@ -19,6 +20,7 @@ export default function App() {
         {/* Public routes */}
         <Route path="/login" element={<LoginPage />} />
         <Route path="/signup" element={<SignupPage />} />
+        <Route path="/find-account" element={<FindAccountPage />} />
 
         {/* Protected mini-hompy routes */}
         <Route element={<ProtectedRoute />}>

@@ -26,6 +26,18 @@ export async function findUserById(id: string): Promise<StoredUser | undefined> 
   return mapRow(rows[0])
 }
 
+export async function findEmailsByNameAndNickname(name: string, nickname: string): Promise<string[]> {
+  const { rows } = await pool.query(
+    `SELECT email FROM users WHERE name = $1 AND nickname = $2`,
+    [name, nickname]
+  )
+  return rows.map((row: any) => row.email)
+}
+
+export async function updateUserPassword(id: string, passwordHash: string): Promise<void> {
+  await pool.query(`UPDATE users SET password = $1 WHERE id = $2`, [passwordHash, id])
+}
+
 export async function findUserRole(id: string): Promise<UserRole | undefined> {
   const { rows } = await pool.query(`SELECT role FROM users WHERE id = $1`, [id])
   if (rows.length === 0) return undefined

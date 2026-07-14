@@ -36,6 +36,22 @@ export interface AuthResponse {
   user: User
 }
 
+export interface FindEmailRequest {
+  name: string
+  nickname: string
+}
+
+export interface FindEmailResponse {
+  maskedEmails: string[]
+}
+
+export interface ResetPasswordRequest {
+  email: string
+  name: string
+  nickname: string
+  newPassword: string
+}
+
 // ===== Admin Types =====
 export interface AdminUserSummary {
   id: string

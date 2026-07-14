@@ -18,6 +18,8 @@ interface AuthState {
   logout: () => void
   checkAuth: () => Promise<void>
   clearError: () => void
+  findEmail: (name: string, nickname: string) => Promise<string[]>
+  resetPassword: (email: string, name: string, nickname: string, newPassword: string) => Promise<void>
 }
 
 export const useAuthStore = create<AuthState>((set) => ({
@@ -72,4 +74,29 @@ export const useAuthStore = create<AuthState>((set) => ({
   },
 
   clearError: () => set({ error: null }),
+
+  findEmail: async (name, nickname) => {
+    set({ isLoading: true, error: null })
+    try {
+      const { maskedEmails } = await authService.findEmail({ name, nickname })
+      set({ isLoading: false })
+      return maskedEmails
+    } catch (err: any) {
+      const message = err.response?.data?.error || '아이디 찾기에 실패했습니다.'
+      set({ error: message, isLoading: false })
+      throw err
+    }
+  },
+
+  resetPassword: async (email, name, nickname, newPassword) => {
+    set({ isLoading: true, error: null })
+    try {
+      await authService.resetPassword({ email, name, nickname, newPassword })
+      set({ isLoading: false })
+    } catch (err: any) {
+      const message = err.response?.data?.error || '비밀번호 재설정에 실패했습니다.'
+      set({ error: message, isLoading: false })
+      throw err
+    }
+  },
 }))

@@ -1,7 +1,14 @@
 import { Router } from 'express'
 import bcrypt from 'bcryptjs'
-import type { LoginRequest, SignupRequest } from '@maxt/shared'
-import { findUserByEmail, findUserById, createUser, toPublicUser } from '../data/users.js'
+import type { LoginRequest, SignupRequest, FindEmailRequest, ResetPasswordRequest } from '@maxt/shared'
+import {
+  findUserByEmail,
+  findUserById,
+  createUser,
+  toPublicUser,
+  findEmailsByNameAndNickname,
+  updateUserPassword,
+} from '../data/users.js'
 import { signToken, verifyAuth, type AuthRequest } from '../middleware/auth.js'
 import pool from '../db/pool.js'
 
@@ -131,6 +138,57 @@ router.post('/signup', async (req, res) => {
   } finally {
     client.release()
   }
+})
+
+// keep first 2 chars of local part visible: sumsoo@x.com → su****@x.com
+function maskEmail(email: string): string {
+  const [local, domain] = email.split('@')
+  const visible = local.slice(0, 2)
+  return `${visible}${'*'.repeat(Math.max(local.length - visible.length, 1))}@${domain}`
+}
+
+// POST /api/auth/find-email — identity check via name + nickname (no SMTP)
+router.post('/find-email', async (req, res) => {
+  const { name, nickname } = req.body as FindEmailRequest
+
+  if (!name || !nickname) {
+    res.status(400).json({ error: '이름과 닉네임을 입력해주세요.' })
+    return
+  }
+
+  const emails = await findEmailsByNameAndNickname(name.trim(), nickname.trim())
+  if (emails.length === 0) {
+    res.status(404).json({ error: '일치하는 계정을 찾을 수 없습니다.' })
+    return
+  }
+
+  res.json({ maskedEmails: emails.map(maskEmail) })
+})
+
+// POST /api/auth/reset-password — identity check via email + name + nickname (no SMTP)
+router.post('/reset-password', async (req, res) => {
+  const { email, name, nickname, newPassword } = req.body as ResetPasswordRequest
+
+  if (!email || !name || !nickname || !newPassword) {
+    res.status(400).json({ error: '모든 필드를 입력해주세요.' })
+    return
+  }
+
+  if (newPassword.length < 4) {
+    res.status(400).json({ error: '비밀번호는 4자 이상이어야 합니다.' })
+    return
+  }
+
+  const user = await findUserByEmail(email.trim())
+  if (!user || user.name !== name.trim() || user.nickname !== nickname.trim()) {
+    res.status(404).json({ error: '입력한 정보와 일치하는 계정이 없습니다.' })
+    return
+  }
+
+  const passwordHash = await bcrypt.hash(newPassword, 10)
+  await updateUserPassword(user.id, passwordHash)
+
+  res.json({ ok: true })
 })
 
 // GET /api/auth/me

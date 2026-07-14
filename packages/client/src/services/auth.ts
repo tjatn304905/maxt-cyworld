@@ -1,5 +1,13 @@
 import api from './http'
-import type { LoginRequest, SignupRequest, AuthResponse, User } from '../types'
+import type {
+  LoginRequest,
+  SignupRequest,
+  AuthResponse,
+  User,
+  FindEmailRequest,
+  FindEmailResponse,
+  ResetPasswordRequest,
+} from '../types'
 
 export async function login(data: LoginRequest): Promise<AuthResponse> {
   const res = await api.post<AuthResponse>('/auth/login', data)
@@ -16,6 +24,15 @@ export async function signup(data: SignupRequest): Promise<AuthResponse> {
 export async function getMe(): Promise<User> {
   const res = await api.get<{ user: User }>('/auth/me')
   return res.data.user
+}
+
+export async function findEmail(data: FindEmailRequest): Promise<FindEmailResponse> {
+  const res = await api.post<FindEmailResponse>('/auth/find-email', data)
+  return res.data
+}
+
+export async function resetPassword(data: ResetPasswordRequest): Promise<void> {
+  await api.post('/auth/reset-password', data)
 }
 
 export function logout() {

@@ -87,32 +87,11 @@ export default function LoginPage() {
 
       {/* Links */}
       <div className='flex items-center gap-2 mt-5 text-sm text-gray-500'>
-        <span className='hover:text-gray-700 cursor-pointer'>아이디 찾기</span>
+        <Link to='/find-account' className='hover:text-gray-700'>아이디 찾기</Link>
         <span className='text-gray-300'>•</span>
-        <span className='hover:text-gray-700 cursor-pointer'>비밀번호 재설정</span>
+        <Link to='/find-account?tab=password' className='hover:text-gray-700'>비밀번호 재설정</Link>
         <span className='text-gray-300'>•</span>
         <Link to='/signup' className='text-cy-cyan-dark font-bold hover:underline'>회원가입</Link>
-      </div>
-
-      {/* Banner (decorative) */}
-      <div className='mt-8 w-full max-w-[380px] bg-gradient-to-r from-[#fff3e0] to-[#ffe0b2] border border-[#e0c090] rounded-lg p-3 flex items-center gap-3'>
-        <div className='text-2xl'>🌰</div>
-        <div>
-          <p className='text-xs font-bold text-[#6d4c00]'>Mobile AX Team Archive</p>
-          <p className='text-[10px] text-[#8d6c20]'>우리 팀의 추억을 도토리에 담아요 🌰</p>
-        </div>
-      </div>
-
-      {/* Footer */}
-      <div className='absolute bottom-8 text-center'>
-        <div className='flex items-center gap-2 text-xs text-gray-400 mb-1'>
-          <span>이용약관</span>
-          <span className='text-gray-300'>|</span>
-          <span className='font-bold'>개인정보처리방침</span>
-          <span className='text-gray-300'>|</span>
-          <span>고객센터</span>
-        </div>
-        <p className='text-[10px] text-gray-400'>Copyright Cyworld Z Corp All Rights reserved.</p>
       </div>
     </div>
   )
