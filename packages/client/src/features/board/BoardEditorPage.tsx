@@ -8,6 +8,7 @@ import PageHeader from '../../components/ui/PageHeader'
 import CyButton from '../../components/ui/CyButton'
 import CyInput from '../../components/ui/CyInput'
 import RichTextEditor from '../../components/shared/RichTextEditor'
+import CyLoader from '../../components/ui/CyLoader'
 import { BOARD_CATEGORIES } from './categories'
 
 export default function BoardEditorPage() {
@@ -80,7 +81,7 @@ export default function BoardEditorPage() {
   }
 
   if (isEdit && !loaded) {
-    return <p className='text-[9px] text-cy-text-muted text-center py-8'>불러오는 중...</p>
+    return <CyLoader message='게시물을 불러오는 중' />
   }
 
   return (

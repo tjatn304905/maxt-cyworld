@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import type { ItemCategory } from '../../types'
 import { useAvatarStore } from '../../store/avatarStore'
 import PixelAvatar, { avatarConfigFromRenderKeys } from '../ui/PixelAvatar'
+import CyLoader from '../ui/CyLoader'
 import { resolveRenderKey } from '../ui/avatarCatalog'
 
 const CATEGORY_TABS: { key: ItemCategory; label: string }[] = [
@@ -37,7 +38,7 @@ function previewOffsetY(category: ItemCategory, renderKey: string | null): numbe
 }
 
 export default function AvatarCustomizer() {
-  const { items, draft, loadItems, setDraftItem } = useAvatarStore()
+  const { items, draft, isLoading, loadItems, setDraftItem } = useAvatarStore()
   const [activeTab, setActiveTab] = useState<ItemCategory>('HAIR')
 
   useEffect(() => {
@@ -79,6 +80,9 @@ export default function AvatarCustomizer() {
           ))}
         </div>
 
+        {isLoading && items.length === 0 && (
+          <CyLoader size='sm' message='아이템을 불러오는 중' />
+        )}
         <div className='grid grid-cols-4 gap-1.5 max-h-52 overflow-y-auto scrollbar-hide pr-0.5'>
           {tabItems.map((item) => {
             const config = avatarConfigFromRenderKeys([

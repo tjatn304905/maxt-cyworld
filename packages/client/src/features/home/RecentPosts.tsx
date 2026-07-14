@@ -1,13 +1,14 @@
 import { useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import CyTag from '../../components/ui/CyTag'
+import CySpinner from '../../components/ui/CySpinner'
 import { usePostStore } from '../../store/postStore'
 
 // 홈 메인 위젯: 최근 게시글 (팀 히스토리 중심)
 export default function RecentPosts() {
   const navigate = useNavigate()
   const posts = usePostStore((state) => state.posts)
-  const { fetchPosts } = usePostStore()
+  const { isLoading, fetchPosts } = usePostStore()
 
   useEffect(() => {
     fetchPosts({ page: 1, category: null })
@@ -22,7 +23,10 @@ export default function RecentPosts() {
       <div className='font-black text-xs text-cy-cyan'>최근 이야기</div>
       <hr className='my-1 h-[1px] bg-cy-border border-none' />
       <div className='flex flex-col'>
-        {recent.length === 0 && (
+        {isLoading && recent.length === 0 && (
+          <CySpinner label='불러오는 중' className='py-2' />
+        )}
+        {!isLoading && recent.length === 0 && (
           <p className='text-[8px] text-cy-text-muted py-2'>아직 기록된 이야기가 없습니다.</p>
         )}
         {recent.map((post) => (

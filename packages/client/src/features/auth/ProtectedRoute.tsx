@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Navigate, Outlet } from 'react-router-dom'
 import { useAuthStore } from '../../store/authStore'
+import CyLoader from '../../components/ui/CyLoader'
 
 export default function ProtectedRoute() {
   const { isAuthenticated, isLoading, checkAuth } = useAuthStore()
@@ -11,11 +12,7 @@ export default function ProtectedRoute() {
   }, [checkAuth])
 
   if (!checked || isLoading) {
-    return (
-      <div className="login-bg">
-        <div className="text-gray-400 text-sm">로딩 중...</div>
-      </div>
-    )
+    return <CyLoader fullPage message='미니홈피 여는 중' />
   }
 
   if (!isAuthenticated) {

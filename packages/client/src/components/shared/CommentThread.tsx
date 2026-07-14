@@ -5,6 +5,7 @@ import { usePostStore } from '../../store/postStore'
 import { useAuthStore } from '../../store/authStore'
 import { useRole } from '../../hooks/useRole'
 import PixelAvatar, { avatarConfigFromRenderKeys } from '../ui/PixelAvatar'
+import CySpinner from '../ui/CySpinner'
 
 interface CommentThreadProps {
   postId: number
@@ -28,7 +29,10 @@ function formatDate(value?: string): string {
 export default function CommentThread({ postId }: CommentThreadProps) {
   const user = useAuthStore((state) => state.user)
   const { isAdmin } = useRole()
-  const comments = usePostStore((state) => state.commentsByPost[postId]) ?? []
+  // undefined until the first fetch resolves → distinguishes loading from "no comments"
+  const commentsRaw = usePostStore((state) => state.commentsByPost[postId])
+  const comments = commentsRaw ?? []
+  const isLoaded = commentsRaw !== undefined
   const { fetchComments, addComment, updateComment, deleteComment } = usePostStore()
 
   const [newComment, setNewComment] = useState('')
@@ -36,6 +40,7 @@ export default function CommentThread({ postId }: CommentThreadProps) {
   const [replyText, setReplyText] = useState('')
   const [editingId, setEditingId] = useState<number | null>(null)
   const [editText, setEditText] = useState('')
+  const [isBusy, setIsBusy] = useState(false)
 
   useEffect(() => {
     fetchComments(postId)
@@ -45,30 +50,51 @@ export default function CommentThread({ postId }: CommentThreadProps) {
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault()
-    if (!newComment.trim()) return
-    await addComment(postId, newComment.trim())
-    setNewComment('')
+    if (!newComment.trim() || isBusy) return
+    setIsBusy(true)
+    try {
+      await addComment(postId, newComment.trim())
+      setNewComment('')
+    } finally {
+      setIsBusy(false)
+    }
   }
 
   const handleReply = async (e: FormEvent, parentId: number) => {
     e.preventDefault()
-    if (!replyText.trim()) return
-    await addComment(postId, replyText.trim(), parentId)
-    setReplyText('')
-    setReplyTo(null)
+    if (!replyText.trim() || isBusy) return
+    setIsBusy(true)
+    try {
+      await addComment(postId, replyText.trim(), parentId)
+      setReplyText('')
+      setReplyTo(null)
+    } finally {
+      setIsBusy(false)
+    }
   }
 
   const handleEdit = async (e: FormEvent, commentId: number) => {
     e.preventDefault()
-    if (!editText.trim()) return
-    await updateComment(postId, commentId, editText.trim())
-    setEditingId(null)
-    setEditText('')
+    if (!editText.trim() || isBusy) return
+    setIsBusy(true)
+    try {
+      await updateComment(postId, commentId, editText.trim())
+      setEditingId(null)
+      setEditText('')
+    } finally {
+      setIsBusy(false)
+    }
   }
 
   const handleDelete = async (commentId: number) => {
+    if (isBusy) return
     if (!window.confirm('댓글을 삭제할까요?')) return
-    await deleteComment(postId, commentId)
+    setIsBusy(true)
+    try {
+      await deleteComment(postId, commentId)
+    } finally {
+      setIsBusy(false)
+    }
   }
 
   const renderComment = (comment: Comment, isReply: boolean) => {
@@ -89,7 +115,9 @@ export default function CommentThread({ postId }: CommentThreadProps) {
             className='flex-1 text-[9px] border border-cy-border-light rounded-md px-1.5 py-0.5 outline-none focus:border-cy-cyan font-[inherit]'
             autoFocus
           />
-          <button type='submit' className='cy-btn !text-[8px]'>저장</button>
+          <button type='submit' className='cy-btn !text-[8px]' disabled={isBusy}>
+            {isBusy ? '저장 중...' : '저장'}
+          </button>
           <button type='button' className='cy-btn !text-[8px]' onClick={() => setEditingId(null)}>취소</button>
         </form>
       )
@@ -127,7 +155,8 @@ export default function CommentThread({ postId }: CommentThreadProps) {
         {canDelete && (
           <button
             onClick={() => handleDelete(comment.id)}
-            className='text-[7px] text-cy-text-muted hover:text-cy-tag-red cursor-pointer whitespace-nowrap'
+            disabled={isBusy}
+            className='text-[7px] text-cy-text-muted hover:text-cy-tag-red cursor-pointer whitespace-nowrap disabled:opacity-50'
           >
             삭제
           </button>
@@ -138,7 +167,10 @@ export default function CommentThread({ postId }: CommentThreadProps) {
 
   return (
     <div className='p-2'>
-      {topLevel.length === 0 && (
+      {!isLoaded && (
+        <CySpinner label='일촌평 불러오는 중' className='w-full justify-center py-1' />
+      )}
+      {isLoaded && topLevel.length === 0 && (
         <p className='text-[8px] text-cy-text-muted text-center py-1'>첫 번째 일촌평을 남겨보세요!</p>
       )}
 
@@ -158,7 +190,7 @@ export default function CommentThread({ postId }: CommentThreadProps) {
                   className='flex-1 text-[9px] border border-cy-border-light rounded-md px-1.5 py-0.5 outline-none focus:border-cy-cyan font-[inherit]'
                   autoFocus
                 />
-                <button type='submit' className='cy-btn !p-1'>
+                <button type='submit' className='cy-btn !p-1' disabled={isBusy}>
                   <Send size={10} />
                 </button>
               </form>
@@ -175,9 +207,9 @@ export default function CommentThread({ postId }: CommentThreadProps) {
           placeholder='일촌평을 입력하세요...'
           className='flex-1 text-[9px] border-[1.5px] border-cy-border-light rounded-md px-1.5 py-1 outline-none focus:border-cy-cyan font-[inherit]'
         />
-        <button type='submit' className='cy-btn flex items-center gap-0.5 !text-[8px]'>
+        <button type='submit' className='cy-btn flex items-center gap-0.5 !text-[8px]' disabled={isBusy}>
           <Send size={8} />
-          등록
+          {isBusy ? '등록 중...' : '등록'}
         </button>
       </form>
     </div>

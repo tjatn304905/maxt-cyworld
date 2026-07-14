@@ -1,4 +1,4 @@
-import { useRef, type ChangeEvent } from 'react'
+import { useRef, useState, type ChangeEvent } from 'react'
 import { useEditor, EditorContent } from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'
 import TextStyle from '@tiptap/extension-text-style'
@@ -13,6 +13,7 @@ import {
   AlignLeft, AlignCenter, AlignRight, ImagePlus, Undo2, Redo2,
 } from 'lucide-react'
 import { uploadImage } from '../../services/uploads'
+import CySpinner from '../ui/CySpinner'
 
 const FONTS = [
   { label: '기본', value: '' },
@@ -30,6 +31,7 @@ interface RichTextEditorProps {
 
 export default function RichTextEditor({ content, onChange }: RichTextEditorProps) {
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const [isUploading, setIsUploading] = useState(false)
 
   const editor = useEditor({
     extensions: [
@@ -72,6 +74,7 @@ export default function RichTextEditor({ content, onChange }: RichTextEditorProp
 
   const insertUploaded = async (file: File, position?: number) => {
     if (!editor) return
+    setIsUploading(true)
     try {
       const { url } = await uploadImage(file)
       const chain = editor.chain().focus()
@@ -82,6 +85,8 @@ export default function RichTextEditor({ content, onChange }: RichTextEditorProp
       }
     } catch (err: any) {
       window.alert(err.response?.data?.error || '이미지 업로드에 실패했습니다.')
+    } finally {
+      setIsUploading(false)
     }
   }
 
@@ -156,7 +161,12 @@ export default function RichTextEditor({ content, onChange }: RichTextEditorProp
 
         <span className='cy-editor-sep' />
 
-        <button type='button' className='cy-btn !px-1.5 !py-0.5' onClick={() => fileInputRef.current?.click()}>
+        <button
+          type='button'
+          className='cy-btn !px-1.5 !py-0.5'
+          onClick={() => fileInputRef.current?.click()}
+          disabled={isUploading}
+        >
           <ImagePlus size={10} />
         </button>
         <input
@@ -176,6 +186,8 @@ export default function RichTextEditor({ content, onChange }: RichTextEditorProp
         <button type='button' className='cy-btn !px-1.5 !py-0.5' onClick={() => editor.chain().focus().redo().run()}>
           <Redo2 size={10} />
         </button>
+
+        {isUploading && <CySpinner label='이미지 업로드 중' className='ml-1' />}
       </div>
 
       <EditorContent editor={editor} />

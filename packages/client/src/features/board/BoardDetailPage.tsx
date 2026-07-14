@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { Heart } from 'lucide-react'
 import { usePostStore } from '../../store/postStore'
@@ -10,6 +10,7 @@ import CyButton from '../../components/ui/CyButton'
 import CyTag from '../../components/ui/CyTag'
 import DashedDivider from '../../components/ui/DashedDivider'
 import CommentThread from '../../components/shared/CommentThread'
+import CyLoader from '../../components/ui/CyLoader'
 
 export default function BoardDetailPage() {
   const { id } = useParams()
@@ -21,6 +22,7 @@ export default function BoardDetailPage() {
   const { currentPost, isLoading, error, fetchPost, fetchLikeStatus, toggleLike, deletePost } =
     usePostStore()
   const liked = usePostStore((state) => state.likedByPost[postId]) ?? false
+  const [isDeleting, setIsDeleting] = useState(false)
 
   useEffect(() => {
     if (!Number.isNaN(postId)) {
@@ -30,7 +32,7 @@ export default function BoardDetailPage() {
   }, [postId, fetchPost, fetchLikeStatus])
 
   if (isLoading && !currentPost) {
-    return <p className='text-[9px] text-cy-text-muted text-center py-8'>불러오는 중...</p>
+    return <CyLoader message='게시물을 불러오는 중' />
   }
 
   if (!currentPost || currentPost.id !== postId) {
@@ -47,9 +49,15 @@ export default function BoardDetailPage() {
   const canManage = isOwner || isAdmin
 
   const handleDelete = async () => {
+    if (isDeleting) return
     if (!window.confirm('게시물을 삭제할까요?')) return
-    await deletePost(post.id)
-    navigate('/board')
+    setIsDeleting(true)
+    try {
+      await deletePost(post.id)
+      navigate('/board')
+    } finally {
+      setIsDeleting(false)
+    }
   }
 
   return (
@@ -85,7 +93,11 @@ export default function BoardDetailPage() {
           {isOwner && (
             <CyButton size='sm' onClick={() => navigate(`/board/${post.id}/edit`)}>수정</CyButton>
           )}
-          {canManage && <CyButton size='sm' onClick={handleDelete}>삭제</CyButton>}
+          {canManage && (
+            <CyButton size='sm' onClick={handleDelete} disabled={isDeleting}>
+              {isDeleting ? '삭제 중...' : '삭제'}
+            </CyButton>
+          )}
           <CyButton size='sm' onClick={() => navigate('/board')}>목록으로</CyButton>
         </div>
       </div>

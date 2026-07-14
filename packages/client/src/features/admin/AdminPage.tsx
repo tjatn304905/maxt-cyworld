@@ -1,5 +1,6 @@
 import { useEffect } from 'react'
 import PageHeader from '../../components/ui/PageHeader'
+import CySpinner from '../../components/ui/CySpinner'
 import MemberRow from './MemberRow'
 import { useAdminStore } from '../../store/adminStore'
 import { useAuthStore } from '../../store/authStore'
@@ -22,7 +23,7 @@ export default function AdminPage() {
       </p>
 
       {error && <p className='text-[8px] text-cy-tag-red px-1 pb-1'>{error}</p>}
-      {isLoading && <p className='text-[8px] text-cy-text-muted px-1 pb-1'>불러오는 중...</p>}
+      {isLoading && <CySpinner label='회원 목록 불러오는 중' className='px-1 pb-1' />}
 
       <table className='cy-post-table'>
         <thead>

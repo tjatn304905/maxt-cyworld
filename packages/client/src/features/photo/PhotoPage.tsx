@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import PageHeader from '../../components/ui/PageHeader'
+import CyLoader from '../../components/ui/CyLoader'
 import PhotoCard from './PhotoCard'
 import Lightbox from './Lightbox'
 import type { GalleryImage } from '../../types'
@@ -25,7 +26,9 @@ export default function PhotoPage() {
 
       <div className='w-full h-full overflow-y-auto scrollbar-hide'>
         {error && <p className='text-[8px] text-cy-tag-red text-center py-2'>{error}</p>}
-        {!isLoading && !error && images.length === 0 ? (
+        {isLoading && !error ? (
+          <CyLoader message='사진을 불러오는 중' className='py-8' />
+        ) : !isLoading && !error && images.length === 0 ? (
           <div className='text-center py-8 text-cy-text-muted text-sm'>
             아직 사진이 없습니다
             <p className='text-[8px] mt-1'>게시글에 사진을 첨부하면 이곳에 모아져요 📸</p>

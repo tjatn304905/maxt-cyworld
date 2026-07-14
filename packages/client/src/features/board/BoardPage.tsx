@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import PageHeader from '../../components/ui/PageHeader'
 import CyButton from '../../components/ui/CyButton'
+import CyLoader from '../../components/ui/CyLoader'
+import CySpinner from '../../components/ui/CySpinner'
 import BookExportModal from '../book/BookExportModal'
 import { usePostStore } from '../../store/postStore'
 import { useRole } from '../../hooks/useRole'
@@ -49,6 +51,7 @@ export default function BoardPage() {
             {filter === 'All' ? '전체' : filter}
           </CyButton>
         ))}
+        {isLoading && posts.length > 0 && <CySpinner className='ml-1' />}
         <span className='flex-1' />
         <CyButton size='sm' onClick={() => setExporting(true)}>📖 역사서 만들기</CyButton>
       </div>
@@ -67,6 +70,13 @@ export default function BoardPage() {
           </tr>
         </thead>
         <tbody>
+          {isLoading && posts.length === 0 && (
+            <tr>
+              <td colSpan={6}>
+                <CyLoader size='sm' message='게시물을 불러오는 중' />
+              </td>
+            </tr>
+          )}
           {posts.length === 0 && !isLoading && (
             <tr>
               <td colSpan={6} className='!py-4 text-cy-text-muted'>아직 게시물이 없습니다.</td>

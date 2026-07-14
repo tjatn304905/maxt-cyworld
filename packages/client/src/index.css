@@ -246,6 +246,12 @@ a {
   color: white;
 }
 
+.cy-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
 /* ===== Tag Badge ===== */
 .cy-tag {
   font-family: var(--font-pretendard);
@@ -568,6 +574,89 @@ a {
 @keyframes bgmEq {
   0%, 100% { height: 3px; }
   50% { height: 8px; }
+}
+
+/* ===== Loading (CyLoader / CySpinner) ===== */
+.cy-loader {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 24px 0;
+}
+
+/* hopping minimi + squishing ground shadow share one rhythm */
+.cy-loader-minimi {
+  animation: cyLoaderHop 0.8s ease-in-out infinite;
+}
+
+@keyframes cyLoaderHop {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+
+.cy-loader-shadow {
+  width: 24px;
+  height: 4px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.12);
+  margin-top: -4px;
+  animation: cyLoaderShadow 0.8s ease-in-out infinite;
+}
+
+@keyframes cyLoaderShadow {
+  0%, 100% { transform: scaleX(1); }
+  50% { transform: scaleX(0.6); }
+}
+
+.cy-loader-msg {
+  font-family: var(--font-neo);
+  font-size: 9px;
+  color: var(--color-cy-text-muted);
+}
+
+.cy-loader-msg span {
+  animation: cyLoaderBlink 1.2s infinite;
+}
+
+.cy-loader-msg span:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.cy-loader-msg span:nth-child(3) {
+  animation-delay: 0.4s;
+}
+
+@keyframes cyLoaderBlink {
+  0%, 60%, 100% { opacity: 0.2; }
+  30% { opacity: 1; }
+}
+
+.cy-spinner {
+  display: inline-flex;
+  align-items: flex-end;
+  gap: 2px;
+  height: 10px;
+}
+
+.cy-spinner span {
+  width: 3px;
+  background-color: var(--color-cy-cyan);
+  animation: cySpinnerBar 0.7s ease-in-out infinite;
+}
+
+.cy-spinner span:nth-child(2) {
+  animation-delay: 0.15s;
+}
+
+.cy-spinner span:nth-child(3) {
+  animation-delay: 0.3s;
+}
+
+@keyframes cySpinnerBar {
+  0%, 100% { height: 4px; }
+  50% { height: 10px; }
 }
 
 /* ===== Modal (CyModal) ===== */
