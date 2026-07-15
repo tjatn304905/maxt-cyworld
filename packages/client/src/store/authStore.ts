@@ -1,5 +1,5 @@
 import { create } from 'zustand'
-import type { User, SignupAvatarSelection } from '../types'
+import type { User, SignupAvatarSelection, UpdateProfileRequest } from '../types'
 import * as authService from '../services/auth'
 
 interface AuthState {
@@ -20,6 +20,7 @@ interface AuthState {
   clearError: () => void
   findEmail: (name: string, nickname: string) => Promise<string[]>
   resetPassword: (email: string, name: string, nickname: string, newPassword: string) => Promise<void>
+  updateProfile: (data: UpdateProfileRequest) => Promise<void>
 }
 
 export const useAuthStore = create<AuthState>((set) => ({
@@ -95,6 +96,18 @@ export const useAuthStore = create<AuthState>((set) => ({
       set({ isLoading: false })
     } catch (err: any) {
       const message = err.response?.data?.error || '비밀번호 재설정에 실패했습니다.'
+      set({ error: message, isLoading: false })
+      throw err
+    }
+  },
+
+  updateProfile: async (data) => {
+    set({ isLoading: true, error: null })
+    try {
+      const user = await authService.updateMe(data)
+      set({ user, isLoading: false })
+    } catch (err: any) {
+      const message = err.response?.data?.error || '내 정보 수정에 실패했습니다.'
       set({ error: message, isLoading: false })
       throw err
     }

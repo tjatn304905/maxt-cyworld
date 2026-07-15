@@ -1,6 +1,12 @@
 import { Router } from 'express'
 import bcrypt from 'bcryptjs'
-import type { LoginRequest, SignupRequest, FindEmailRequest, ResetPasswordRequest } from '@maxt/shared'
+import type {
+  LoginRequest,
+  SignupRequest,
+  FindEmailRequest,
+  ResetPasswordRequest,
+  UpdateProfileRequest,
+} from '@maxt/shared'
 import {
   findUserByEmail,
   findUserById,
@@ -8,6 +14,7 @@ import {
   toPublicUser,
   findEmailsByNameAndNickname,
   updateUserPassword,
+  updateUserProfile,
 } from '../data/users.js'
 import { signToken, verifyAuth, type AuthRequest } from '../middleware/auth.js'
 import pool from '../db/pool.js'
@@ -200,6 +207,60 @@ router.get('/me', verifyAuth, async (req, res) => {
     return
   }
   res.json({ user: toPublicUser(user) })
+})
+
+// PUT /api/auth/me — update own profile (name/nickname, optional password change)
+router.put('/me', verifyAuth, async (req, res) => {
+  const authReq = req as AuthRequest
+  const { name, nickname, currentPassword, newPassword } = req.body as UpdateProfileRequest
+
+  const trimmedName = name?.trim()
+  const trimmedNickname = nickname?.trim()
+
+  if (name !== undefined && !trimmedName) {
+    res.status(400).json({ error: '이름을 입력해주세요.' })
+    return
+  }
+  if (nickname !== undefined && !trimmedNickname) {
+    res.status(400).json({ error: '닉네임을 입력해주세요.' })
+    return
+  }
+
+  const user = await findUserById(authReq.userId!)
+  if (!user) {
+    res.status(404).json({ error: '사용자를 찾을 수 없습니다.' })
+    return
+  }
+
+  let passwordHash: string | undefined
+  if (newPassword) {
+    if (newPassword.length < 4) {
+      res.status(400).json({ error: '비밀번호는 4자 이상이어야 합니다.' })
+      return
+    }
+    if (!currentPassword) {
+      res.status(400).json({ error: '현재 비밀번호를 입력해주세요.' })
+      return
+    }
+    const valid = await bcrypt.compare(currentPassword, user.password)
+    if (!valid) {
+      res.status(401).json({ error: '현재 비밀번호가 일치하지 않습니다.' })
+      return
+    }
+    passwordHash = await bcrypt.hash(newPassword, 10)
+  }
+
+  const updated = await updateUserProfile(authReq.userId!, {
+    name: trimmedName,
+    nickname: trimmedNickname,
+    passwordHash,
+  })
+  if (!updated) {
+    res.status(404).json({ error: '사용자를 찾을 수 없습니다.' })
+    return
+  }
+
+  res.json({ user: toPublicUser(updated) })
 })
 
 export default router

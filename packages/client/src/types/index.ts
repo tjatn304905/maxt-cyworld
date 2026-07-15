@@ -8,6 +8,7 @@ export type {
   FindEmailRequest,
   FindEmailResponse,
   ResetPasswordRequest,
+  UpdateProfileRequest,
   AdminUserSummary,
   UpdateUserRoleRequest,
   HeadType,

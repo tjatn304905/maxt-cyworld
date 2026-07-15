@@ -52,6 +52,13 @@ export interface ResetPasswordRequest {
   newPassword: string
 }
 
+export interface UpdateProfileRequest {
+  name?: string
+  nickname?: string
+  currentPassword?: string
+  newPassword?: string
+}
+
 // ===== Admin Types =====
 export interface AdminUserSummary {
   id: string

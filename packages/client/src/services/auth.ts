@@ -7,6 +7,7 @@ import type {
   FindEmailRequest,
   FindEmailResponse,
   ResetPasswordRequest,
+  UpdateProfileRequest,
 } from '../types'
 
 export async function login(data: LoginRequest): Promise<AuthResponse> {
@@ -23,6 +24,11 @@ export async function signup(data: SignupRequest): Promise<AuthResponse> {
 
 export async function getMe(): Promise<User> {
   const res = await api.get<{ user: User }>('/auth/me')
+  return res.data.user
+}
+
+export async function updateMe(data: UpdateProfileRequest): Promise<User> {
+  const res = await api.put<{ user: User }>('/auth/me', data)
   return res.data.user
 }
 
