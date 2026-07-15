@@ -90,7 +90,7 @@ export default function BoardDetailPage() {
           <span>좋아요 {post.likeCount}</span>
         </button>
         <div className='flex gap-1'>
-          {isOwner && (
+          {canManage && (
             <CyButton size='sm' onClick={() => navigate(`/board/${post.id}/edit`)}>수정</CyButton>
           )}
           {canManage && (

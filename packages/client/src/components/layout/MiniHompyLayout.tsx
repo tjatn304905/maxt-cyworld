@@ -1,8 +1,9 @@
-import { Outlet } from 'react-router-dom'
+import { Outlet, useNavigate } from 'react-router-dom'
 import Sidebar from './Sidebar'
 import NavigationTabs from '../shared/NavigationTabs'
 import { useVisitStore } from '../../store/visitStore'
 import { useBgmStore } from '../../store/bgmStore'
+import { useAuthStore } from '../../store/authStore'
 import { useRole } from '../../hooks/useRole'
 import { useEffect, useState, useCallback } from 'react'
 import type { TabItem } from '../../types'
@@ -17,10 +18,17 @@ const BASE_TABS: TabItem[] = [
 export default function MiniHompyLayout() {
   const { today, total, recordVisit } = useVisitStore()
   const loadTracks = useBgmStore((state) => state.loadTracks)
+  const logout = useAuthStore((state) => state.logout)
   const { isAdmin } = useRole()
+  const navigate = useNavigate()
   const [scale, setScale] = useState(1)
 
   const tabs = isAdmin ? [...BASE_TABS, { to: '/admin', label: '관리' }] : BASE_TABS
+
+  const handleLogout = () => {
+    logout()
+    navigate('/login')
+  }
 
   const updateScale = useCallback(() => {
     const frameW = 860
@@ -55,9 +63,13 @@ export default function MiniHompyLayout() {
               <div className="cy-header-title">
                 사이좋은 사람들, 싸이월드
               </div>
-              <div className="cy-header-settings">
-                사생활보호설정 <span className="text-[#ff6400] ml-1">▶️</span>
-              </div>
+              <button
+                type="button"
+                onClick={handleLogout}
+                className="cy-header-settings bg-transparent border-none p-0 cursor-pointer hover:underline"
+              >
+                로그아웃 <span className="text-[#ff6400] ml-1">▶️</span>
+              </button>
             </header>
 
             <div className="flex gap-2">
