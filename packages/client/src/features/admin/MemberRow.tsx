@@ -1,7 +1,7 @@
 import type { AdminUserSummary } from '../../types'
 import CyTag from '../../components/ui/CyTag'
 import CyButton from '../../components/ui/CyButton'
-import PixelAvatar from '../../components/ui/PixelAvatar'
+import PixelAvatar, { avatarConfigFromRenderKeys } from '../../components/ui/PixelAvatar'
 
 interface MemberRowProps {
   member: AdminUserSummary
@@ -32,7 +32,7 @@ export default function MemberRow({ member, isSelf, onSetRole }: MemberRowProps)
     <tr className='!cursor-default'>
       <td>
         <div className='flex justify-center'>
-          <PixelAvatar size={22} />
+          <PixelAvatar size={22} {...avatarConfigFromRenderKeys(member.avatarKeys ?? [])} />
         </div>
       </td>
       <td>{member.name}</td>

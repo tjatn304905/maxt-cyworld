@@ -17,8 +17,17 @@ router.get('/users', async (req, res) => {
   const total = parseInt(countResult.rows[0].count)
 
   const { rows } = await pool.query(
-    `SELECT id, email, name, nickname, role, created_at
-     FROM users ORDER BY created_at ASC LIMIT $1 OFFSET $2`,
+    `SELECT u.id, u.email, u.name, u.nickname, u.role, u.created_at,
+            h.render_key AS hair_key, f.render_key AS face_key, cl.render_key AS cloth_key,
+            b.render_key AS bottom_key, ac.render_key AS accessory_key
+     FROM users u
+     LEFT JOIN avatars a ON a.user_id = u.id
+     LEFT JOIN avatar_items h ON a.hair_id = h.id
+     LEFT JOIN avatar_items f ON a.face_id = f.id
+     LEFT JOIN avatar_items cl ON a.cloth_id = cl.id
+     LEFT JOIN avatar_items b ON a.bottom_id = b.id
+     LEFT JOIN avatar_items ac ON a.accessory_id = ac.id
+     ORDER BY u.created_at ASC LIMIT $1 OFFSET $2`,
     [pageSize, offset]
   )
 
@@ -30,6 +39,7 @@ router.get('/users', async (req, res) => {
       nickname: row.nickname,
       role: row.role,
       createdAt: row.created_at,
+      avatarKeys: [row.hair_key, row.face_key, row.cloth_key, row.bottom_key, row.accessory_key],
     })),
     total,
     page: parseInt(page),

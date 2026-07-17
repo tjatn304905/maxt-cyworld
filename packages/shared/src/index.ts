@@ -67,6 +67,8 @@ export interface AdminUserSummary {
   nickname: string
   role: UserRole
   createdAt: string
+  // avatarKeys: [hair, face, cloth, bottom, accessory] render_key 배열
+  avatarKeys?: (string | null)[]
 }
 
 export interface UpdateUserRoleRequest {
