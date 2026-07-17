@@ -2,6 +2,7 @@ import { Router } from 'express'
 import type { CreatePostRequest, UpdatePostRequest } from '@maxt/shared'
 import pool from '../db/pool.js'
 import { verifyAuth, requireRole, type AuthRequest } from '../middleware/auth.js'
+import { deleteOrphanImages } from '../lib/storage.js'
 
 const router = Router()
 
@@ -162,6 +163,7 @@ router.put('/:id', verifyAuth, requireRole('WRITER'), async (req, res) => {
   }
 
   const client = await pool.connect()
+  let removedUrls: string[] = []
   try {
     await client.query('BEGIN')
 
@@ -174,6 +176,13 @@ router.put('/:id', verifyAuth, requireRole('WRITER'), async (req, res) => {
 
     // replace images only when the field is provided
     if (Array.isArray(images)) {
+      // remember the old images so we can purge any that are no longer used
+      const { rows: oldRows } = await client.query(
+        `SELECT image_url FROM post_images WHERE post_id = $1`,
+        [id]
+      )
+      removedUrls = oldRows.map((r) => r.image_url)
+
       await client.query(`DELETE FROM post_images WHERE post_id = $1`, [id])
       for (let i = 0; i < images.length; i++) {
         await client.query(
@@ -191,6 +200,9 @@ router.put('/:id', verifyAuth, requireRole('WRITER'), async (req, res) => {
   } finally {
     client.release()
   }
+
+  // best-effort bucket cleanup after commit (skips URLs still referenced)
+  await deleteOrphanImages(removedUrls)
 })
 
 // DELETE /api/posts/:id — delete (author or ADMIN only)
@@ -214,8 +226,14 @@ router.delete('/:id', verifyAuth, requireRole('WRITER'), async (req, res) => {
   }
 
   const client = await pool.connect()
+  let imageUrls: string[] = []
   try {
     await client.query('BEGIN')
+    const { rows: imgRows } = await client.query(
+      `SELECT image_url FROM post_images WHERE post_id = $1`,
+      [id]
+    )
+    imageUrls = imgRows.map((r) => r.image_url)
     await client.query(`DELETE FROM post_images WHERE post_id = $1`, [id])
     await client.query(`DELETE FROM comments WHERE post_id = $1`, [id])
     await client.query(`DELETE FROM likes WHERE post_id = $1`, [id])
@@ -228,6 +246,9 @@ router.delete('/:id', verifyAuth, requireRole('WRITER'), async (req, res) => {
   } finally {
     client.release()
   }
+
+  // best-effort bucket cleanup after commit (skips URLs still referenced elsewhere)
+  await deleteOrphanImages(imageUrls)
 })
 
 function mapPostRow(row: any) {

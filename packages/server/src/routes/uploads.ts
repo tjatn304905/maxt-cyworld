@@ -1,18 +1,9 @@
 import { Router } from 'express'
 import multer from 'multer'
-import { createClient } from '@supabase/supabase-js'
 import { verifyAuth, type AuthRequest } from '../middleware/auth.js'
+import { supabase, BUCKET } from '../lib/storage.js'
 
 const router = Router()
-
-const SUPABASE_URL = process.env.SUPABASE_URL
-const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY
-const BUCKET = 'post-images'
-
-const supabase =
-  SUPABASE_URL && SUPABASE_SERVICE_ROLE_KEY
-    ? createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY)
-    : null
 
 const upload = multer({
   storage: multer.memoryStorage(),
@@ -28,7 +19,8 @@ const upload = multer({
 
 // POST /api/uploads — upload one image to Supabase Storage, returns public URL
 router.post('/', verifyAuth, (req, res) => {
-  if (!supabase) {
+  const storage = supabase
+  if (!storage) {
     res.status(503).json({ error: '이미지 업로드가 설정되지 않았습니다.' })
     return
   }
@@ -59,7 +51,7 @@ router.post('/', verifyAuth, (req, res) => {
       : ''
     const path = `${authReq.userId}/${Date.now()}${ext}`
 
-    const { error } = await supabase.storage.from(BUCKET).upload(path, file.buffer, {
+    const { error } = await storage.storage.from(BUCKET).upload(path, file.buffer, {
       contentType: file.mimetype,
       upsert: false,
     })
@@ -69,7 +61,7 @@ router.post('/', verifyAuth, (req, res) => {
       return
     }
 
-    const { data } = supabase.storage.from(BUCKET).getPublicUrl(path)
+    const { data } = storage.storage.from(BUCKET).getPublicUrl(path)
     res.status(201).json({ url: data.publicUrl })
   })
 })
