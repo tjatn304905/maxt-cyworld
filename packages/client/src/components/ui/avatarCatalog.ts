@@ -16,6 +16,8 @@ const NAME_TO_KEY: Record<string, string> = {
   'HAIR:포니테일': 'hair:ponytail',
   'HAIR:리본 머리': 'hair:ribbon',
   'HAIR:곱슬 파마': 'hair:curly',
+  'HAIR:짧은 머리': 'hair:short',
+  'HAIR:긴 생머리': 'hair:long',
   // FACE
   'FACE:기본 얼굴': 'face:default',
   'FACE:미소': 'face:smile',
@@ -28,6 +30,8 @@ const NAME_TO_KEY: Record<string, string> = {
   'FACE:화남': 'face:angry',
   'FACE:눈물': 'face:tears',
   'FACE:놀람': 'face:surprised',
+  'FACE:함박웃음': 'face:laugh',
+  'FACE:메롱': 'face:tongue',
   // CLOTHES (상의)
   'CLOTHES:기본 티셔츠': 'top:default',
   'CLOTHES:기본 상의': 'top:default',
@@ -44,6 +48,8 @@ const NAME_TO_KEY: Record<string, string> = {
   'CLOTHES:멜빵': 'top:overalls',
   'CLOTHES:줄무늬 티셔츠': 'top:stripe',
   'CLOTHES:한복 저고리': 'top:hanbok',
+  'CLOTHES:가디건': 'top:cardigan',
+  'CLOTHES:원피스': 'top:dress',
   // BOTTOM
   'BOTTOM:기본 하의': 'bottom:default',
   'BOTTOM:기본 바지': 'bottom:default',
@@ -56,6 +62,8 @@ const NAME_TO_KEY: Record<string, string> = {
   'BOTTOM:카고바지': 'bottom:cargo',
   'BOTTOM:한복치마': 'bottom:hanbok',
   'BOTTOM:정장바지': 'bottom:slacks',
+  'BOTTOM:롱스커트': 'bottom:longskirt',
+  'BOTTOM:레깅스': 'bottom:leggings',
   // ACCESSORY
   'ACCESSORY:없음': 'accessory:none',
   'ACCESSORY:No Accessory': 'accessory:none',
@@ -67,6 +75,8 @@ const NAME_TO_KEY: Record<string, string> = {
   'ACCESSORY:나비넥타이': 'accessory:bowtie',
   'ACCESSORY:마스크': 'accessory:mask',
   'ACCESSORY:목걸이': 'accessory:necklace',
+  'ACCESSORY:귀걸이': 'accessory:earrings',
+  'ACCESSORY:안대': 'accessory:eyepatch',
 }
 
 export function resolveRenderKey(

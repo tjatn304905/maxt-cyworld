@@ -79,18 +79,23 @@ export interface UpdateUserRoleRequest {
 export type HeadType =
   | 'default' | 'cat' | 'bear' | 'bunny' | 'crown'
   | 'bob' | 'ponytail' | 'ribbon' | 'curly'
+  | 'short' | 'long'
 export type BodyType =
   | 'default' | 'suit' | 'casual' | 'sporty' | 'hoodie'
   | 'shirt' | 'overalls' | 'stripe' | 'hanbok'
+  | 'cardigan' | 'dress'
 export type FaceType =
   | 'default' | 'smile' | 'wink' | 'sleepy' | 'cool'
   | 'heart' | 'angry' | 'tears' | 'surprised'
+  | 'laugh' | 'tongue'
 export type BottomType =
   | 'default' | 'jeans' | 'shorts' | 'skirt' | 'training'
   | 'checkskirt' | 'cargo' | 'hanbok' | 'slacks'
+  | 'longskirt' | 'leggings'
 export type AccessoryType =
   | 'none' | 'glasses' | 'hat' | 'scarf' | 'headphones'
   | 'sunglasses' | 'bowtie' | 'mask' | 'necklace'
+  | 'earrings' | 'eyepatch'
 
 export interface AvatarConfig {
   size?: number
