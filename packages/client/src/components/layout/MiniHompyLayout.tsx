@@ -2,7 +2,8 @@ import { Outlet, useNavigate } from 'react-router-dom'
 import Sidebar from './Sidebar'
 import NavigationTabs from '../shared/NavigationTabs'
 import { useVisitStore } from '../../store/visitStore'
-import { useBgmStore } from '../../store/bgmStore'
+// BGM feature temporarily hidden — restore later
+// import { useBgmStore } from '../../store/bgmStore'
 import { useAuthStore } from '../../store/authStore'
 import { useRole } from '../../hooks/useRole'
 import { useEffect, useState, useCallback } from 'react'
@@ -17,7 +18,7 @@ const BASE_TABS: TabItem[] = [
 
 export default function MiniHompyLayout() {
   const { today, total, recordVisit } = useVisitStore()
-  const loadTracks = useBgmStore((state) => state.loadTracks)
+  // const loadTracks = useBgmStore((state) => state.loadTracks)
   const logout = useAuthStore((state) => state.logout)
   const { isAdmin } = useRole()
   const navigate = useNavigate()
@@ -40,11 +41,11 @@ export default function MiniHompyLayout() {
 
   useEffect(() => {
     recordVisit()
-    loadTracks()
+    // loadTracks() // BGM feature temporarily hidden — restore later
     updateScale()
     window.addEventListener('resize', updateScale)
     return () => window.removeEventListener('resize', updateScale)
-  }, [updateScale, loadTracks])
+  }, [updateScale])
 
   return (
     <div

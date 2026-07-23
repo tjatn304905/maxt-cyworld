@@ -1,17 +1,20 @@
 import RecentPosts from './RecentPosts'
 import Summary from './Summary'
-import MusicBoard from './MusicBoard'
+// BGM feature temporarily hidden — restore later
+// import MusicBoard from './MusicBoard'
 
 export default function HomePage() {
   return (
     <div className="py-3 px-5">
       <div className="flex gap-4">
         <RecentPosts />
-        <div className="flex flex-col shrink-0">
+        <div className="flex flex-col shrink-0 w-[190px]">
           <Summary />
+          {/* BGM feature temporarily hidden — restore later
           <div className="mt-2">
             <MusicBoard />
           </div>
+          */}
         </div>
       </div>
     </div>

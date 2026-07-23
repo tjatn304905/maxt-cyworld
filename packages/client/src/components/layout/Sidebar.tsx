@@ -1,7 +1,8 @@
 import { useState } from 'react'
 import ProfileCard from '../shared/ProfileCard'
 import MoodSelector from '../shared/MoodSelector'
-import BgmMiniPlayer from '../shared/BgmMiniPlayer'
+// BGM feature temporarily hidden — restore later
+// import BgmMiniPlayer from '../shared/BgmMiniPlayer'
 import type { Mood } from '../../types'
 
 const MOODS: Mood[] = [
@@ -19,9 +20,11 @@ export default function Sidebar() {
     <div className="flex flex-col items-center justify-center py-3">
       <ProfileCard />
       <MoodSelector moods={MOODS} value={mood} onChange={setMood} />
+      {/* BGM feature temporarily hidden — restore later
       <div className="w-full px-2 mt-2">
         <BgmMiniPlayer />
       </div>
+      */}
     </div>
   )
 }
