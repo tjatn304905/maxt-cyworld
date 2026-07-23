@@ -8,7 +8,7 @@ interface NavigationTabsProps {
 
 export default function NavigationTabs({ tabs, className = '' }: NavigationTabsProps) {
   return (
-    <div className={`absolute top-16 -right-[44px] text-[9px] flex flex-col gap-0.5 z-30 ${className}`}>
+    <div className={`absolute top-16 -right-[44px] text-[9px] flex flex-col gap-0.5 z-30 max-desk:static max-desk:flex-row max-desk:justify-end max-desk:gap-1 max-desk:pr-2 ${className}`}>
       {tabs.map(({ to, label }) => (
         <NavLink
           key={to}

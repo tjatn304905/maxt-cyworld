@@ -32,11 +32,12 @@ export default function MiniHompyLayout() {
   }
 
   const updateScale = useCallback(() => {
-    const frameW = 860
-    const frameH = 570
+    // upscale only on large screens (1x~2x); below 1x the layout reflows via CSS instead of shrinking
+    const frameW = 900 // frame 808 + bookmark tabs 44 + side margins
+    const frameH = 590
     const sw = window.innerWidth / frameW
     const sh = window.innerHeight / frameH
-    setScale(Math.min(sw, sh, 2))
+    setScale(Math.max(1, Math.min(sw, sh, 2)))
   }, [])
 
   useEffect(() => {
@@ -49,10 +50,10 @@ export default function MiniHompyLayout() {
 
   return (
     <div
-      className="flex items-center justify-center"
+      className="w-full max-w-[808px] max-desk:px-2 max-desk:py-3"
       style={{ transform: `scale(${scale})`, transformOrigin: 'center center' }}
     >
-      <div className="cyframe-outer w-[808px] min-h-[544px] relative">
+      <div className="cyframe-outer w-full min-h-[544px] max-desk:min-h-0 relative">
         <NavigationTabs tabs={tabs} />
 
         <div className="cyframe-dashed">
@@ -73,11 +74,11 @@ export default function MiniHompyLayout() {
               </button>
             </header>
 
-            <div className="flex gap-2">
-              <aside className="cy-sidebar h-[440px]">
+            <div className="flex gap-2 max-desk:flex-col">
+              <aside className="cy-sidebar h-[440px] max-desk:h-auto">
                 <Sidebar />
               </aside>
-              <main className="cy-main h-[440px] overflow-y-auto scrollbar-hide">
+              <main className="cy-main h-[440px] max-desk:h-auto overflow-y-auto scrollbar-hide">
                 <Outlet />
               </main>
             </div>

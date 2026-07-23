@@ -34,7 +34,7 @@ export default function PhotoPage() {
             <p className='text-[8px] mt-1'>게시글에 사진을 첨부하면 이곳에 모아져요 📸</p>
           </div>
         ) : (
-          <div className='grid grid-cols-3 gap-3 p-1'>
+          <div className='grid grid-cols-3 max-desk:grid-cols-2 gap-3 p-1'>
             {images.map((image) => (
               <PhotoCard key={image.id} image={image} onSelect={() => setSelected(image)} />
             ))}

@@ -46,6 +46,9 @@
   --font-pretendard: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
   --font-neo: 'NeoDunggeunmo', 'Courier New', monospace;
   --font-score: 'S-CoreDream', sans-serif;
+
+  /* min viewport where the fixed hompy frame (808px + bookmark tabs 44px) fits */
+  --breakpoint-desk: 56.25rem; /* 900px */
 }
 
 /* ===== Global Reset ===== */
@@ -205,6 +208,38 @@ a {
   border-radius: 6px;
   min-width: 0;
   overflow: hidden;
+}
+
+/* ===== Responsive (below --breakpoint-desk: fluid frame, stacked panels) ===== */
+@media (max-width: 56.25rem) {
+  #root {
+    align-items: flex-start;
+    overflow: visible;
+  }
+
+  .cyframe-outer {
+    padding: 12px;
+  }
+
+  .cyframe-inner {
+    padding: 6px;
+  }
+
+  /* bookmark tabs move to a horizontal folder-tab row above the frame */
+  .bookmark-tab {
+    border-left: 1px solid black;
+    border-bottom: 0;
+    border-radius: 5px 5px 0 0;
+    height: 24px;
+  }
+
+  .cy-header-counter {
+    width: auto;
+  }
+
+  .cy-sidebar {
+    width: 100%;
+  }
 }
 
 /* ===== Page Header (reusable) ===== */
