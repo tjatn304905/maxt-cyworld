@@ -6,6 +6,7 @@ import authRoutes from './routes/auth.js'
 import postRoutes from './routes/posts.js'
 import commentRoutes from './routes/comments.js'
 import likeRoutes from './routes/likes.js'
+import ilchonRoutes from './routes/ilchon.js'
 import avatarRoutes from './routes/avatars.js'
 import imageRoutes from './routes/images.js'
 import bgmRoutes from './routes/bgm.js'
@@ -34,6 +35,7 @@ app.use('/api/auth', authRoutes)
 app.use('/api/posts', postRoutes)
 app.use('/api/posts', commentRoutes)
 app.use('/api/posts', likeRoutes)
+app.use('/api/ilchon', ilchonRoutes)
 app.use('/api', avatarRoutes)
 app.use('/api/images', imageRoutes)
 app.use('/api/bgm', bgmRoutes)

@@ -195,6 +195,25 @@ export interface Comment {
   updatedAt?: string
 }
 
+// ===== Ilchon Comment Types (일촌평 — 미니홈피 홈에 남기는 한 줄 평) =====
+export interface IlchonComment {
+  id: number
+  userId: string
+  content: string
+  createdAt: string
+  updatedAt: string
+  // avatarKeys: [hair, face, cloth, bottom, accessory] render_key 배열
+  author: {
+    name: string
+    nickname: string
+    avatarKeys?: (string | null)[]
+  }
+}
+
+export interface CreateIlchonCommentRequest {
+  content: string
+}
+
 // ===== BGM Types =====
 export interface BgmTrack {
   id: number

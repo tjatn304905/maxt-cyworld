@@ -27,6 +27,8 @@ export type {
   CreatePostRequest,
   UpdatePostRequest,
   Comment,
+  IlchonComment,
+  CreateIlchonCommentRequest,
   BgmTrack,
   UploadResponse,
   GalleryImage,
