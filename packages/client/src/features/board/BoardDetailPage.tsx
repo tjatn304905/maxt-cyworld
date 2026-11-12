@@ -1,15 +1,16 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, type MouseEvent } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { Heart } from 'lucide-react'
 import { usePostStore } from '../../store/postStore'
 import { useAuthStore } from '../../store/authStore'
 import { useRole } from '../../hooks/useRole'
-import { toDisplayHtml } from '../../utils/postHtml'
+import { extractImageUrls, toDisplayHtml } from '../../utils/postHtml'
 import PageHeader from '../../components/ui/PageHeader'
 import CyButton from '../../components/ui/CyButton'
 import CyTag from '../../components/ui/CyTag'
 import DashedDivider from '../../components/ui/DashedDivider'
 import CommentThread from '../../components/shared/CommentThread'
+import CyPhotoViewer from '../../components/shared/CyPhotoViewer'
 import CyLoader from '../../components/ui/CyLoader'
 
 export default function BoardDetailPage() {
@@ -23,6 +24,7 @@ export default function BoardDetailPage() {
     usePostStore()
   const liked = usePostStore((state) => state.likedByPost[postId]) ?? false
   const [isDeleting, setIsDeleting] = useState(false)
+  const [zoomedSrc, setZoomedSrc] = useState<string | null>(null)
 
   useEffect(() => {
     if (!Number.isNaN(postId)) {
@@ -47,6 +49,22 @@ export default function BoardDetailPage() {
   const post = currentPost
   const isOwner = post.author?.id === user?.id
   const canManage = isOwner || isAdmin
+
+  const rawImageUrls =
+    post.images && post.images.length > 0
+      ? post.images.map((img) => img.imageUrl)
+      : extractImageUrls(post.content)
+  const imageUrls =
+    zoomedSrc && !rawImageUrls.includes(zoomedSrc) ? [zoomedSrc, ...rawImageUrls] : rawImageUrls
+  const zoomedIndex = zoomedSrc ? Math.max(0, imageUrls.indexOf(zoomedSrc)) : 0
+
+  const handleBodyClick = (e: MouseEvent<HTMLDivElement>) => {
+    const target = e.target as HTMLElement
+    if (target.tagName === 'IMG') {
+      const src = target.getAttribute('src')
+      if (src) setZoomedSrc(src)
+    }
+  }
 
   const handleDelete = async () => {
     if (isDeleting) return
@@ -78,6 +96,7 @@ export default function BoardDetailPage() {
       {/* post body (sanitized rich text) */}
       <div
         className='cy-post-body py-3 px-1'
+        onClick={handleBodyClick}
         dangerouslySetInnerHTML={{ __html: toDisplayHtml(post.content) }}
       />
 
@@ -104,6 +123,19 @@ export default function BoardDetailPage() {
 
       <DashedDivider />
       <CommentThread postId={post.id} />
+
+      {zoomedSrc && (
+        <CyPhotoViewer
+          images={imageUrls.map((url) => ({
+            url,
+            title: post.title,
+            date: post.eventDate,
+            author: post.author?.nickname,
+          }))}
+          initialIndex={zoomedIndex}
+          onClose={() => setZoomedSrc(null)}
+        />
+      )}
     </div>
   )
 }

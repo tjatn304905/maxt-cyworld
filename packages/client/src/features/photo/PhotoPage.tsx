@@ -42,7 +42,9 @@ export default function PhotoPage() {
         )}
       </div>
 
-      {selected && <Lightbox image={selected} onClose={() => setSelected(null)} />}
+      {selected && (
+        <Lightbox image={selected} images={images} onClose={() => setSelected(null)} />
+      )}
     </div>
   )
 }
